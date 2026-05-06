@@ -1,0 +1,1122 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spellforge</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Quicksand:wght@400;600&display=swap');
+    html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+    canvas { display: block; }
+    .menu-btn { background: linear-gradient(135deg, #7c3aed, #5b21b6); color: #fff; border: none; padding: 12px 32px; border-radius: 8px; font-size: 16px; font-family: 'Cinzel', serif; cursor: pointer; box-shadow: 0 0 20px #7c3aed88; transition: all 0.3s; }
+    .menu-btn:hover { box-shadow: 0 0 30px #7c3aedcc; transform: scale(1.05); }
+    .keybind-input { background: #1a0533; border: 1px solid #7c3aed; color: #e2c4ff; padding: 8px 12px; border-radius: 6px; font-family: 'Quicksand', sans-serif; font-size: 14px; width: 100%; max-width: 150px; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full bg-black m-0 p-0">
+  <canvas id="game"></canvas><!-- HUD -->
+  <div id="hud" style="position:absolute;top:12px;left:12px;font-family:'Cinzel',serif;color:#e2c4ff;pointer-events:none;text-shadow:0 0 8px #7c3aed;display:none;">
+   <div id="hud-title" style="font-size:18px;font-weight:700;margin-bottom:4px;">
+    Spellforge
+   </div>
+   <div id="hud-wave" style="font-size:13px;">
+    Wave: 1
+   </div>
+   <div id="hud-hp" style="font-size:13px;">
+    Mana: 100/100
+   </div>
+   <div id="hud-kills" style="font-size:13px;">
+    Souls: 0
+   </div>
+   <div id="hud-spell" style="font-size:13px;color:#a78bfa;">
+    Spell: Arcane Bolt
+   </div>
+   <div id="hud-secondary" style="font-size:12px;color:#fbbf24;margin-top:8px;">
+    Secondary: Arcane Shield [SPACE]
+   </div>
+   <div id="hud-secondary-cd" style="font-size:12px;color:#f97316;"></div>
+  </div><!-- START/MAIN MENU -->
+  <div id="start-screen" style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f0620 0%,#1a0533 50%,#0f0620 100%);z-index:200;flex-direction:column;">
+   <div style="text-align:center;font-family:'Cinzel',serif;animation:fadeIn 0.8s ease-in;">
+    <div style="margin-bottom:16px;font-size:14px;letter-spacing:3px;color:#8b5cf6;text-transform:uppercase;">
+     Welcome to
+    </div>
+    <h1 id="start-title" style="font-size:64px;color:#e2c4ff;text-shadow:0 0 40px #7c3aed,0 0 80px #5b21b6,0 0 120px #7c3aed;margin:0 0 4px;letter-spacing:2px;font-weight:900;">SPELLFORGE</h1>
+    <div style="height:3px;width:120px;background:linear-gradient(90deg,transparent,#7c3aed,transparent);margin:16px auto 24px;"></div>
+    <p style="color:#a78bfa;font-family:'Quicksand',sans-serif;margin:0 0 48px;font-size:15px;font-weight:500;letter-spacing:0.5px;">Master the art of combat magic. Survive endless waves. Become a legend.</p>
+    <div style="display:flex;flex-direction:column;gap:14px;align-items:center;"><button id="play-btn" class="menu-btn" style="padding:14px 48px;font-size:18px;letter-spacing:1px;background:linear-gradient(135deg,#7c3aed,#5b21b6);box-shadow:0 0 30px #7c3aed88,inset 0 0 20px #7c3aed22;">BEGIN ADVENTURE</button>
+     <div style="display:flex;gap:12px;margin-top:12px;"><button id="settings-btn" class="menu-btn" style="background:linear-gradient(135deg,#4f46e5,#3730a3);font-size:14px;">⚙ Settings</button> <button id="instructions-btn" class="menu-btn" style="background:linear-gradient(135deg,#6b21a8,#581c87);font-size:14px;">? Guide</button>
+     </div>
+    </div>
+    <div style="margin-top:48px;font-size:12px;color:#6b7280;font-family:'Quicksand',sans-serif;">
+     12 Unique Spells • 7 Abilities • Infinite Waves
+    </div>
+   </div>
+   <style>
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    #start-screen > div { animation: fadeIn 0.8s ease-in; }
+   </style>
+  </div><!-- SETTINGS MENU -->
+  <div id="settings-screen" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0f0620,#1a0533);z-index:250;overflow-y:auto;padding:40px 20px;">
+   <div style="max-width:600px;margin:0 auto;font-family:'Cinzel',serif;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:32px;">
+     <div style="font-size:28px;color:#7c3aed;">
+      ⚙
+     </div>
+     <h1 style="color:#e2c4ff;font-size:36px;margin:0;">SETTINGS</h1>
+    </div>
+    <div style="background:linear-gradient(135deg,#1a0533,#2d1055);border:2px solid #7c3aed;border-radius:16px;padding:28px;box-shadow:0 0 40px #7c3aed22;">
+     <div style="margin-bottom:32px;">
+      <h3 style="color:#a78bfa;font-size:18px;margin:0 0 16px;letter-spacing:1px;text-transform:uppercase;">Keybinds</h3>
+      <div style="background:#050010;border-radius:12px;padding:16px;space-y:20px;">
+       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #3a2a55;"><label style="color:#c084fc;font-size:14px;font-weight:600;">Move Up</label> <input class="keybind-input" id="key-up" maxlength="1" value="W" style="max-width:60px;">
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #3a2a55;"><label style="color:#c084fc;font-size:14px;font-weight:600;">Move Down</label> <input class="keybind-input" id="key-down" maxlength="1" value="S" style="max-width:60px;">
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #3a2a55;"><label style="color:#c084fc;font-size:14px;font-weight:600;">Move Left</label> <input class="keybind-input" id="key-left" maxlength="1" value="A" style="max-width:60px;">
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #3a2a55;"><label style="color:#c084fc;font-size:14px;font-weight:600;">Move Right</label> <input class="keybind-input" id="key-right" maxlength="1" value="D" style="max-width:60px;">
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #3a2a55;"><label style="color:#c084fc;font-size:14px;font-weight:600;">Cast Spell</label> <span style="color:#fbbf24;font-size:14px;font-weight:600;">Mouse Click</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #3a2a55;"><label style="color:#c084fc;font-size:14px;font-weight:600;">Secondary Ability</label> <input class="keybind-input" id="key-secondary" maxlength="1" value=" " style="max-width:60px;">
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #3a2a55;"><label style="color:#c084fc;font-size:14px;font-weight:600;">Switch Spell Forward</label> <input class="keybind-input" id="key-switch" maxlength="1" value="Q" style="max-width:60px;">
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;"><label style="color:#c084fc;font-size:14px;font-weight:600;">Switch Spell Backward</label> <input class="keybind-input" id="key-switch-back" maxlength="1" value="E" style="max-width:60px;">
+        </div>
+       </div>
+      </div>
+     </div>
+     <div style="display:flex;gap:12px;justify-content:center;margin-top:24px;"><button id="settings-back-btn" class="menu-btn">← Back</button> <button id="settings-reset-btn" class="menu-btn" style="background:linear-gradient(135deg,#f97316,#ea580c);">Reset to Default</button>
+     </div>
+    </div>
+   </div>
+  </div><!-- INSTRUCTIONS MENU -->
+  <div id="instructions-screen" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0f0620,#1a0533);z-index:250;overflow-y:auto;padding:40px 20px;">
+   <div style="max-width:700px;margin:0 auto;font-family:'Quicksand',sans-serif;color:#e2c4ff;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:32px;font-family:'Cinzel',serif;">
+     <div style="font-size:28px;color:#7c3aed;">
+      ?
+     </div>
+     <h1 style="color:#e2c4ff;font-size:36px;margin:0;">HOW TO PLAY</h1>
+    </div>
+    <div style="background:linear-gradient(135deg,#1a0533,#2d1055);border:2px solid #7c3aed;border-radius:16px;padding:28px;box-shadow:0 0 40px #7c3aed22;">
+     <div style="margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #3a2a55;">
+      <h3 style="color:#fbbf24;font-size:18px;margin:0 0 10px;letter-spacing:1px;text-transform:uppercase;font-family:'Cinzel',serif;">Objective</h3>
+      <p style="margin:0;line-height:1.6;color:#c084fc;">Survive infinite waves of magical enemies. Defeat creatures to earn souls and collect healing orbs. After each wave, choose spell upgrades to grow stronger and unlock new abilities.</p>
+     </div>
+     <div style="margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #3a2a55;">
+      <h3 style="color:#fbbf24;font-size:18px;margin:0 0 10px;letter-spacing:1px;text-transform:uppercase;font-family:'Cinzel',serif;">Combat</h3>
+      <p style="margin:0 0 10px;line-height:1.6;color:#c084fc;"><strong style="color:#e2c4ff;">Move:</strong> WASD or Arrow Keys</p>
+      <p style="margin:0 0 10px;line-height:1.6;color:#c084fc;"><strong style="color:#e2c4ff;">Cast Spell:</strong> Click Mouse Anywhere</p>
+      <p style="margin:0;line-height:1.6;color:#c084fc;"><strong style="color:#e2c4ff;">Switch Spell:</strong> Q to switch forward, E to switch backward</p>
+      <p style="margin:12px 0 0;line-height:1.6;color:#a78bfa;font-size:14px;">Learn all 12 spells and their unique effects. Chain attacks together for powerful combos.</p>
+     </div>
+     <div style="margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #3a2a55;">
+      <h3 style="color:#fbbf24;font-size:18px;margin:0 0 10px;letter-spacing:1px;text-transform:uppercase;font-family:'Cinzel',serif;">Abilities (Secondary)</h3>
+      <p style="margin:0;line-height:1.6;color:#c084fc;"><strong style="color:#e2c4ff;">Press Spacebar</strong> to activate. 7 unique abilities: Shield, Blink, Slow, Heal, Pulse, Clone, Freeze.</p>
+      <p style="margin:12px 0 0;line-height:1.6;color:#a78bfa;font-size:14px;">Each has a cooldown. Choose new ones after every 3 waves.</p>
+     </div>
+     <div style="margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #3a2a55;">
+      <h3 style="color:#fbbf24;font-size:18px;margin:0 0 10px;letter-spacing:1px;text-transform:uppercase;font-family:'Cinzel',serif;">Resources</h3>
+      <p style="margin:0 0 10px;line-height:1.6;color:#c084fc;"><strong style="color:#e2c4ff;">Mana (Health):</strong> Your life pool. Collect green orbs to restore health.</p>
+      <p style="margin:0;line-height:1.6;color:#c084fc;"><strong style="color:#e2c4ff;">Souls:</strong> Points earned from kills. Proves your mastery.</p>
+     </div>
+     <div style="margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #3a2a55;">
+      <h3 style="color:#fbbf24;font-size:18px;margin:0 0 10px;letter-spacing:1px;text-transform:uppercase;font-family:'Cinzel',serif;">Status Effects</h3>
+      <p style="margin:0 0 10px;line-height:1.6;color:#c084fc;"><strong style="color:#ff6b35;">Burn (Red Aura):</strong> Enemy takes continuous damage over time.</p>
+      <p style="margin:0;line-height:1.6;color:#c084fc;"><strong style="color:#38d9ff;">Chill (Blue Outline):</strong> Enemy moves 50% slower.</p>
+     </div>
+     <div style="margin-bottom:12px;">
+      <h3 style="color:#fbbf24;font-size:18px;margin:0 0 10px;letter-spacing:1px;text-transform:uppercase;font-family:'Cinzel',serif;">Pro Tips</h3>
+      <ul style="margin:0;padding-left:20px;line-height:1.8;color:#c084fc;">
+       <li>Combine Fire + Frost spells for maximum damage synergy</li>
+       <li>Dodge incoming enemies when possible to avoid taking damage</li>
+       <li>Prioritize damage upgrades early, defense upgrades later</li>
+       <li>Use secondary abilities strategically—don't waste them</li>
+       <li>Each spell has different pierce, explosion, or chain properties</li>
+      </ul>
+     </div>
+    </div><button id="instructions-back-btn" class="menu-btn" style="margin-top:28px;display:block;margin-left:auto;margin-right:auto;">← Back to Menu</button>
+   </div>
+  </div><!-- UPGRADE PANEL -->
+  <div id="upgrade-panel" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Quicksand',sans-serif;z-index:100;">
+   <div style="background:rgba(15,5,30,0.95);border:2px solid #7c3aed;border-radius:12px;padding:24px;text-align:center;min-width:400px;box-shadow:0 0 40px #7c3aed55;">
+    <h2 style="color:#e2c4ff;font-family:'Cinzel',serif;font-size:22px;margin:0 0 20px;letter-spacing:1px;text-transform:uppercase;">✨ Spell Enhancement</h2>
+    <div id="upgrade-options" style="display:flex;flex-direction:column;gap:12px;"></div>
+   </div>
+  </div><!-- SECONDARY UPGRADE PANEL -->
+  <div id="secondary-upgrade-panel" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Quicksand',sans-serif;z-index:100;">
+   <div style="background:rgba(15,5,30,0.95);border:2px solid #fbbf24;border-radius:12px;padding:24px;text-align:center;min-width:400px;box-shadow:0 0 40px #fbbf2455;">
+    <h2 style="color:#fbbf24;font-family:'Cinzel',serif;font-size:22px;margin:0 0 20px;letter-spacing:1px;text-transform:uppercase;">⚡ Power Enhancement</h2>
+    <div id="secondary-options" style="display:flex;flex-direction:column;gap:12px;"></div>
+   </div>
+  </div><!-- DEATH SCREEN -->
+  <div id="death-screen" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a0533,#0f0620);z-index:200;">
+   <div style="text-align:center;font-family:'Cinzel',serif;animation:slideInDown 0.6s ease-out;">
+    <div style="font-size:64px;color:#ef4444;margin-bottom:12px;">
+     ⚔
+    </div>
+    <h1 style="font-size:52px;color:#ef4444;text-shadow:0 0 30px #dc2626,0 0 60px #7f1d1d;margin:0 0 12px;letter-spacing:2px;">DEFEATED</h1>
+    <p id="death-stats" style="color:#fbbf24;font-family:'Quicksand',sans-serif;margin:16px 0 32px;font-size:16px;letter-spacing:0.5px;font-weight:600;"></p><button id="restart-btn" class="menu-btn" style="padding:14px 48px;font-size:16px;background:linear-gradient(135deg,#7c3aed,#5b21b6);box-shadow:0 0 30px #7c3aed88;">TRY AGAIN</button>
+    <p style="color:#6b7280;font-family:'Quicksand',sans-serif;margin-top:24px;font-size:13px;">Your legend will live forever</p>
+   </div>
+   <style>
+    @keyframes slideInDown { from { opacity: 0; transform: translateY(-40px); } to { opacity: 1; transform: translateY(0); } }
+    #death-screen > div { animation: slideInDown 0.6s ease-out; }
+   </style>
+  </div>
+  <script>
+    // Element SDK
+    const defaultConfig = {
+      game_title: 'Spellforge',
+      background_color: '#050010',
+      surface_color: '#1a0533',
+      text_color: '#e2c4ff',
+      primary_action: '#7c3aed',
+      secondary_action: '#a78bfa',
+      font_family: 'Cinzel',
+      font_size: 16
+    };
+
+    function applyConfig(config) {
+      const t = config.game_title || defaultConfig.game_title;
+      const el = document.getElementById('hud-title');
+      if (el) el.textContent = t;
+      const st = document.getElementById('start-title');
+      if (st) st.textContent = t;
+    }
+
+    window.elementSdk.init({
+      defaultConfig,
+      onConfigChange: async (config) => applyConfig(config),
+      mapToCapabilities: (config) => ({
+        recolorables: [
+          { get: () => config.background_color || defaultConfig.background_color, set: v => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+          { get: () => config.surface_color || defaultConfig.surface_color, set: v => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+          { get: () => config.text_color || defaultConfig.text_color, set: v => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+          { get: () => config.primary_action || defaultConfig.primary_action, set: v => { config.primary_action = v; window.elementSdk.setConfig({ primary_action: v }); } },
+          { get: () => config.secondary_action || defaultConfig.secondary_action, set: v => { config.secondary_action = v; window.elementSdk.setConfig({ secondary_action: v }); } }
+        ],
+        borderables: [],
+        fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: v => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+        fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: v => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
+      }),
+      mapToEditPanelValues: (config) => new Map([
+        ['game_title', config.game_title || defaultConfig.game_title]
+      ])
+    });
+
+    // KEYBIND SYSTEM
+    let keybinds = {
+      up: 'w', down: 's', left: 'a', right: 'd',
+      secondary: ' ', switchSpell: 'q', switchSpellBack: 'e'
+    };
+    
+    function loadKeybinds() {
+      const saved = localStorage.getItem('arcaneKeybinds');
+      if (saved) keybinds = JSON.parse(saved);
+      updateKeybindUI();
+    }
+    
+    function saveKeybinds() {
+      localStorage.setItem('arcaneKeybinds', JSON.stringify(keybinds));
+    }
+    
+    function updateKeybindUI() {
+      document.getElementById('key-up').value = keybinds.up.toUpperCase();
+      document.getElementById('key-down').value = keybinds.down.toUpperCase();
+      document.getElementById('key-left').value = keybinds.left.toUpperCase();
+      document.getElementById('key-right').value = keybinds.right.toUpperCase();
+      document.getElementById('key-secondary').value = keybinds.secondary === ' ' ? ' ' : keybinds.secondary.toUpperCase();
+      document.getElementById('key-switch').value = keybinds.switchSpell.toUpperCase();
+      document.getElementById('key-switch-back').value = keybinds.switchSpellBack.toUpperCase();
+    }
+    
+    document.getElementById('settings-back-btn').onclick = () => {
+      document.getElementById('settings-screen').style.display = 'none';
+      document.getElementById('start-screen').style.display = 'flex';
+    };
+    
+    document.getElementById('settings-reset-btn').onclick = () => {
+      keybinds = { up: 'w', down: 's', left: 'a', right: 'd', secondary: ' ', switchSpell: 'q', switchSpellBack: 'e' };
+      saveKeybinds();
+      updateKeybindUI();
+    };
+    
+    ['key-up', 'key-down', 'key-left', 'key-right', 'key-secondary', 'key-switch', 'key-switch-back'].forEach(id => {
+      document.getElementById(id).addEventListener('change', (e) => {
+        const keyMap = { 'key-up': 'up', 'key-down': 'down', 'key-left': 'left', 'key-right': 'right', 'key-secondary': 'secondary', 'key-switch': 'switchSpell', 'key-switch-back': 'switchSpellBack' };
+        let val = e.target.value.toLowerCase();
+        if (id === 'key-secondary' && e.target.value === '') val = ' ';
+        keybinds[keyMap[id]] = val;
+        saveKeybinds();
+      });
+    });
+    
+    document.getElementById('instructions-back-btn').onclick = () => {
+      document.getElementById('instructions-screen').style.display = 'none';
+      document.getElementById('start-screen').style.display = 'flex';
+    };
+
+    // GAME ENGINE
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Input
+    const keys = {};
+    let mouse = { x: 0, y: 0, down: false };
+    let secondaryPressed = false;
+    
+    document.addEventListener('keydown', e => {
+      keys[e.key.toLowerCase()] = true;
+      if (e.key.toLowerCase() === 'p' && gameState === 'playing') {
+        paused = !paused;
+      }
+      if (e.key.toLowerCase() === keybinds.secondary && !secondaryPressed) {
+        secondaryPressed = true;
+        if (gameState === 'playing' && !paused) activateSecondary();
+      }
+    });
+    document.addEventListener('keyup', e => {
+      keys[e.key.toLowerCase()] = false;
+      if (e.key.toLowerCase() === keybinds.switchSpell) keys[keybinds.switchSpell] = false;
+      if (e.key.toLowerCase() === keybinds.switchSpellBack) keys[keybinds.switchSpellBack] = false;
+    });
+    canvas.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+    canvas.addEventListener('mousedown', () => mouse.down = true);
+    canvas.addEventListener('mouseup', () => mouse.down = false);
+
+    // Game state
+    let player, bullets, enemies, particles, orbs, gameState, wave, kills, spellIndex, spells, upgrades, waveTimer, enemiesRemaining, paused, secondaryIndex, secondaries, damageNumbers;
+
+    const SPELLS = [
+      { name: 'Arcane Bolt', color: '#a78bfa', speed: 12, damage: 10, size: 5, cooldown: 8, pierce: 0, type: 'basic' },
+      { name: 'Flame Burst', color: '#f97316', speed: 10, damage: 18, size: 7, cooldown: 14, pierce: 0, type: 'explosion', radius: 60 },
+      { name: 'Frost Shard', color: '#67e8f9', speed: 14, damage: 8, size: 4, cooldown: 5, pierce: 1, type: 'pierce' },
+      { name: 'Void Lance', color: '#c084fc', speed: 18, damage: 25, size: 3, cooldown: 20, pierce: 2, type: 'pierce' },
+      { name: 'Chain Lightning', color: '#fbbf24', speed: 16, damage: 12, size: 6, cooldown: 10, pierce: 0, type: 'chain', chainCount: 3 },
+      { name: 'Soul Fire', color: '#10b981', speed: 9, damage: 30, size: 9, cooldown: 22, pierce: 0, type: 'basic' },
+      { name: 'Blood Nova', color: '#ef4444', speed: 8, damage: 40, size: 12, cooldown: 30, pierce: 5, type: 'nova', radius: 100 },
+      { name: 'Meteor Storm', color: '#ff6b35', speed: 7, damage: 35, size: 10, cooldown: 18, pierce: 3, type: 'meteor', radius: 80 },
+      { name: 'Icewave', color: '#06b6d4', speed: 13, damage: 15, size: 6, cooldown: 12, pierce: 0, type: 'wave' },
+      { name: 'Spectral Beam', color: '#d946ef', speed: 20, damage: 22, size: 4, cooldown: 11, pierce: 4, type: 'pierce' },
+      { name: 'Inferno Ring', color: '#fb923c', speed: 5, damage: 28, size: 14, cooldown: 16, pierce: 0, type: 'ring', radius: 90 },
+      { name: 'Gravity Well', color: '#6366f1', speed: 9, damage: 5, size: 8, cooldown: 15, pierce: 0, type: 'pull', radius: 120 }
+    ];
+
+    const SECONDARIES = [
+      { name: 'Arcane Shield', color: '#a78bfa', cooldown: 8, type: 'shield', duration: 10 },
+      { name: 'Blink', color: '#c084fc', cooldown: 6, type: 'blink', distance: 80 },
+      { name: 'Temporal Slow', color: '#fbbf24', cooldown: 12, type: 'slow', radius: 300, duration: 180 },
+      { name: 'Healing Aura', color: '#10b981', cooldown: 10, type: 'heal', radius: 250, amount: 40 },
+      { name: 'Barrier Pulse', color: '#06b6d4', cooldown: 9, type: 'pulse', radius: 280, knockback: 200 },
+      { name: 'Shadow Clone', color: '#8b5cf6', cooldown: 15, type: 'clone', duration: 120 },
+      { name: 'Frost Nova', color: '#67e8f9', cooldown: 11, type: 'freeze', radius: 220, duration: 90 }
+    ];
+
+    function init() {
+      player = { x: canvas.width / 2, y: canvas.height / 2, vx: 0, vy: 0, hp: 100, maxHp: 100, radius: 14, cooldown: 0, speed: 3.5, invuln: 0, shielded: 0 };
+      bullets = [];
+      enemies = [];
+      particles = [];
+      orbs = [];
+      damageNumbers = [];
+      gameState = 'playing';
+      wave = 1;
+      kills = 0;
+      spellIndex = 0;
+      spells = [SPELLS[0]];
+      secondaryIndex = 0;
+      secondaries = [SECONDARIES[0]];
+      upgrades = { damage: 1, speed: 1, hp: 1, spellUpgrades: {} };
+      paused = false;
+      enemiesRemaining = 0;
+      document.getElementById('hud').style.display = 'block';
+      spawnWave();
+    }
+
+    function spawnWave() {
+      let count = 3 + wave * 2;
+      enemiesRemaining = count;
+      for (let i = 0; i < count; i++) {
+        setTimeout(() => spawnEnemy(), i * 400);
+      }
+    }
+
+    function spawnEnemy() {
+      let side = Math.random() * 4 | 0;
+      let x, y;
+      if (side === 0) { x = -30; y = Math.random() * canvas.height; }
+      else if (side === 1) { x = canvas.width + 30; y = Math.random() * canvas.height; }
+      else if (side === 2) { x = Math.random() * canvas.width; y = -30; }
+      else { x = Math.random() * canvas.width; y = canvas.height + 30; }
+
+      let tier = Math.min(Math.floor(Math.random() * (1 + wave / 3)), 3);
+      const types = [
+        { hp: 20 + wave * 3, speed: 1.2, radius: 12, color: '#c026d3', name: 'Imp', damage: 8 },
+        { hp: 40 + wave * 5, speed: 0.8, radius: 18, color: '#dc2626', name: 'Demon', damage: 15 },
+        { hp: 60 + wave * 8, speed: 0.6, radius: 24, color: '#7c2d12', name: 'Golem', damage: 20 },
+        { hp: 100 + wave * 12, speed: 1.5, radius: 16, color: '#4c1d95', name: 'Wraith', damage: 25 }
+      ];
+      let t = types[tier];
+      enemies.push({ 
+        x, y, hp: t.hp, maxHp: t.hp, speed: t.speed, radius: t.radius, color: t.color, damage: t.damage, flash: 0,
+        burn: 0, chill: 0, chainedFrom: -1
+      });
+    }
+
+    function shoot() {
+      let spell = spells[spellIndex];
+      if (player.cooldown > 0) return;
+      player.cooldown = spell.cooldown;
+      let angle = Math.atan2(mouse.y - player.y, mouse.x - player.x);
+      
+      let bulletData = {
+        x: player.x, y: player.y,
+        vx: Math.cos(angle) * spell.speed,
+        vy: Math.sin(angle) * spell.speed,
+        damage: spell.damage * upgrades.damage,
+        size: spell.size,
+        color: spell.color,
+        pierce: spell.pierce,
+        life: 120,
+        type: spell.type,
+        radius: spell.radius,
+        chainCount: spell.chainCount
+      };
+
+      // Add upgraded properties
+      let spellName = spell.name;
+      if (upgrades.spellUpgrades[spellName + '_v2']) {
+        if (spellName === 'Arcane Bolt') bulletData.splits = 3;
+        if (spellName === 'Flame Burst') bulletData.burnDamage = 8;
+        if (spellName === 'Frost Shard') bulletData.shard_v2 = true;
+        if (spellName === 'Chain Lightning') bulletData.chainCount = 5;
+      } else {
+        if (spellName === 'Flame Burst') bulletData.burnDamage = 5;
+      }
+
+      bullets.push(bulletData);
+      
+      // Muzzle particles
+      for (let i = 0; i < 4; i++) {
+        particles.push({ x: player.x, y: player.y, vx: Math.cos(angle) * (2 + Math.random() * 3), vy: Math.sin(angle) * (2 + Math.random() * 3), life: 15, color: spell.color, size: 3 });
+      }
+    }
+
+    function activateSecondary() {
+      let sec = secondaries[secondaryIndex];
+      if (sec.activeCooldown && sec.activeCooldown > 0) return;
+
+      if (sec.type === 'shield') {
+        player.shielded = sec.duration;
+        for (let i = 0; i < 12; i++) {
+          let angle = (i / 12) * Math.PI * 2;
+          particles.push({ x: player.x, y: player.y, vx: Math.cos(angle) * 5, vy: Math.sin(angle) * 5, life: 30, color: sec.color, size: 5 });
+        }
+      } else if (sec.type === 'blink') {
+        let angle = Math.atan2(mouse.y - player.y, mouse.x - player.x);
+        player.x += Math.cos(angle) * sec.distance;
+        player.y += Math.sin(angle) * sec.distance;
+        player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
+        player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
+        for (let i = 0; i < 20; i++) {
+          particles.push({ x: player.x, y: player.y, vx: (Math.random() - 0.5) * 8, vy: (Math.random() - 0.5) * 8, life: 25, color: sec.color, size: 4 });
+        }
+      } else if (sec.type === 'slow') {
+        for (let i = 0; i < 16; i++) {
+          let angle = (i / 16) * Math.PI * 2;
+          particles.push({ x: player.x, y: player.y, vx: Math.cos(angle) * 4, vy: Math.sin(angle) * 4, life: 40, color: sec.color, size: 6 });
+        }
+        enemies.forEach(e => {
+          e.slowTime = sec.duration;
+        });
+      } else if (sec.type === 'heal') {
+        player.hp = Math.min(player.maxHp, player.hp + sec.amount);
+        for (let i = 0; i < 20; i++) {
+          let angle = (i / 20) * Math.PI * 2;
+          particles.push({ x: player.x, y: player.y, vx: Math.cos(angle) * 5, vy: Math.sin(angle) * 5, life: 35, color: sec.color, size: 5 });
+        }
+      } else if (sec.type === 'pulse') {
+        for (let i = 0; i < 12; i++) {
+          let angle = (i / 12) * Math.PI * 2;
+          particles.push({ x: player.x, y: player.y, vx: Math.cos(angle) * 6, vy: Math.sin(angle) * 6, life: 30, color: sec.color, size: 6 });
+        }
+        enemies.forEach(e => {
+          let dx = e.x - player.x, dy = e.y - player.y;
+          let d = Math.sqrt(dx * dx + dy * dy);
+          if (d < sec.radius) {
+            let angle = Math.atan2(dy, dx);
+            e.vx = Math.cos(angle) * 8;
+            e.vy = Math.sin(angle) * 8;
+            e.pushTime = 8;
+          }
+        });
+      } else if (sec.type === 'clone') {
+        player.cloneActive = true;
+        player.cloneDuration = sec.duration;
+        for (let i = 0; i < 15; i++) {
+          particles.push({ x: player.x, y: player.y, vx: (Math.random() - 0.5) * 8, vy: (Math.random() - 0.5) * 8, life: 30, color: sec.color, size: 5 });
+        }
+      } else if (sec.type === 'freeze') {
+        for (let i = 0; i < 14; i++) {
+          let angle = (i / 14) * Math.PI * 2;
+          particles.push({ x: player.x, y: player.y, vx: Math.cos(angle) * 4, vy: Math.sin(angle) * 4, life: 40, color: sec.color, size: 6 });
+        }
+        enemies.forEach(e => {
+          let dx = e.x - player.x, dy = e.y - player.y;
+          if (Math.sqrt(dx * dx + dy * dy) < sec.radius) {
+            e.chill = Math.max(e.chill, sec.duration);
+          }
+        });
+      }
+
+      sec.activeCooldown = sec.cooldown;
+      secondaryPressed = false;
+    }
+
+    function update() {
+      if (gameState !== 'playing' || paused) return;
+
+      // Movement
+      let mx = 0, my = 0;
+      if (keys[keybinds.up] || keys['arrowup']) my -= 1;
+      if (keys[keybinds.down] || keys['arrowdown']) my += 1;
+      if (keys[keybinds.left] || keys['arrowleft']) mx -= 1;
+      if (keys[keybinds.right] || keys['arrowright']) mx += 1;
+      let len = Math.sqrt(mx * mx + my * my) || 1;
+      player.vx = mx / len * player.speed * upgrades.speed;
+      player.vy = my / len * player.speed * upgrades.speed;
+      player.x += player.vx;
+      player.y += player.vy;
+      player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
+      player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
+
+      if (player.cooldown > 0) player.cooldown--;
+      if (player.invuln > 0) player.invuln--;
+      if (player.shielded > 0) player.shielded--;
+
+      // Secondary cooldowns
+      secondaries.forEach(s => {
+        if (s.activeCooldown && s.activeCooldown > 0) s.activeCooldown--;
+      });
+
+      if (mouse.down) shoot();
+
+      // Spell switch - forward and backward
+      if (keys[keybinds.switchSpell]) {
+        keys[keybinds.switchSpell] = false;
+        spellIndex = (spellIndex + 1) % spells.length;
+      }
+      if (keys[keybinds.switchSpellBack]) {
+        keys[keybinds.switchSpellBack] = false;
+        spellIndex = (spellIndex - 1 + spells.length) % spells.length;
+      }
+
+      // Bullets
+      for (let i = bullets.length - 1; i >= 0; i--) {
+        let b = bullets[i];
+        b.x += b.vx;
+        b.y += b.vy;
+        b.life--;
+        if (b.life <= 0 || b.x < -50 || b.x > canvas.width + 50 || b.y < -50 || b.y > canvas.height + 50) {
+          bullets.splice(i, 1); continue;
+        }
+
+        // Hit enemies
+        let hit = [];
+        for (let j = 0; j < enemies.length; j++) {
+          let e = enemies[j];
+          let dx = b.x - e.x, dy = b.y - e.y;
+          if (dx * dx + dy * dy < (b.size + e.radius) * (b.size + e.radius)) {
+            hit.push(j);
+          }
+        }
+
+        hit.forEach((j, hitIndex) => {
+          let e = enemies[j];
+          e.hp -= b.damage;
+          e.flash = 6;
+          
+          // Show damage number
+          damageNumbers.push({
+            x: e.x,
+            y: e.y,
+            damage: Math.round(b.damage),
+            life: 60,
+            color: b.color
+          });
+          
+          // Apply effects based on spell type
+          if (b.type === 'explosion') {
+            // Check for upgrades
+            if (b.burnDamage >= 8) {
+              // Soul Flame upgrade - spread to nearby enemies
+              e.burn = Math.max(e.burn, 180);
+              for (let k = 0; k < enemies.length; k++) {
+                if (k !== j) {
+                  let dx = e.x - enemies[k].x, dy = e.y - enemies[k].y;
+                  let d = Math.sqrt(dx * dx + dy * dy);
+                  if (d < b.radius) {
+                    let spreadDmg = b.damage * 0.4;
+                    enemies[k].hp -= spreadDmg;
+                    damageNumbers.push({
+                      x: enemies[k].x,
+                      y: enemies[k].y,
+                      damage: Math.round(spreadDmg),
+                      life: 60,
+                      color: '#f97316'
+                    });
+                    enemies[k].burn = Math.max(enemies[k].burn, 180);
+                  }
+                }
+              }
+            } else {
+              e.burn = Math.max(e.burn, 180);
+            }
+            // Explosion hits nearby with visual effect
+            for (let k = 0; k < enemies.length; k++) {
+              if (k !== j) {
+                let dx = b.x - enemies[k].x, dy = b.y - enemies[k].y;
+                let d = Math.sqrt(dx * dx + dy * dy);
+                if (d < b.radius) {
+                  let expDmg = b.damage * 0.6;
+                  enemies[k].hp -= expDmg;
+                  damageNumbers.push({
+                    x: enemies[k].x,
+                    y: enemies[k].y,
+                    damage: Math.round(expDmg),
+                    life: 60,
+                    color: '#f97316'
+                  });
+                  if (b.burnDamage) enemies[k].burn = Math.max(enemies[k].burn, 180);
+                }
+              }
+            }
+            // Explosion particle burst
+            for (let k = 0; k < 20; k++) {
+              let angle = (k / 20) * Math.PI * 2;
+              particles.push({
+                x: b.x,
+                y: b.y,
+                vx: Math.cos(angle) * (6 + Math.random() * 4),
+                vy: Math.sin(angle) * (6 + Math.random() * 4),
+                life: 30,
+                color: '#f97316',
+                size: 5 + Math.random() * 3
+              });
+            }
+          }
+          if (b.type === 'pierce') {
+            // Chill effect - slows enemies
+            e.chill = Math.max(e.chill, 60);
+            
+            // Frozen Cascade upgrade - slowed enemies take more damage
+            if (b.shard_v2) {
+              e.hp -= b.damage * 0.2; // Extra 20% damage
+            }
+          }
+          if (b.type === 'chain') {
+            // Chain to nearby enemies
+            if (!b.chainsTo) b.chainsTo = [];
+            let targets = enemies.filter((en, idx) => idx !== j && !b.chainsTo.includes(idx));
+            targets.sort((a, b) => {
+              let da = Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+              let db = Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2);
+              return da - db;
+            });
+            for (let k = 0; k < Math.min(b.chainCount, targets.length); k++) {
+              let targetIdx = enemies.indexOf(targets[k]);
+              b.chainsTo.push(targetIdx);
+              targets[k].hp -= b.damage * 0.3 * (1 + k * 0.2);
+            }
+          }
+          if (b.type === 'nova') {
+            for (let k = 0; k < enemies.length; k++) {
+              if (k !== j) {
+                let dx = b.x - enemies[k].x, dy = b.y - enemies[k].y;
+                let d = Math.sqrt(dx * dx + dy * dy);
+                if (d < b.radius) {
+                  enemies[k].hp -= b.damage * 0.5;
+                }
+              }
+            }
+          }
+          if (b.type === 'basic' && b.splits) {
+            // Arcane Cascade - create split projectiles
+            if (hitIndex === 0) {
+              for (let s = 0; s < b.splits; s++) {
+                let angle = (s / b.splits) * Math.PI * 2;
+                bullets.push({
+                  x: b.x, y: b.y,
+                  vx: Math.cos(angle) * 8,
+                  vy: Math.sin(angle) * 8,
+                  damage: b.damage * 0.6,
+                  size: 4,
+                  color: b.color,
+                  pierce: 0,
+                  life: 80,
+                  type: 'basic'
+                });
+              }
+            }
+          }
+          if (b.type === 'wave') {
+            // Icewave spreads to nearby enemies
+            for (let k = 0; k < enemies.length; k++) {
+              if (k !== j) {
+                let dx = b.x - enemies[k].x, dy = b.y - enemies[k].y;
+                let d = Math.sqrt(dx * dx + dy * dy);
+                if (d < 80) {
+                  enemies[k].hp -= b.damage * 0.7;
+                  enemies[k].chill = Math.max(enemies[k].chill, 90);
+                }
+              }
+            }
+          }
+          if (b.type === 'meteor') {
+            // Meteor creates impact zone
+            for (let k = 0; k < enemies.length; k++) {
+              if (k !== j) {
+                let dx = b.x - enemies[k].x, dy = b.y - enemies[k].y;
+                let d = Math.sqrt(dx * dx + dy * dy);
+                if (d < b.radius) {
+                  enemies[k].hp -= b.damage * 0.5;
+                  enemies[k].burn = Math.max(enemies[k].burn, 120);
+                }
+              }
+            }
+          }
+          if (b.type === 'ring') {
+            // Inferno Ring creates expanding ring
+            for (let k = 0; k < enemies.length; k++) {
+              if (k !== j) {
+                let dx = b.x - enemies[k].x, dy = b.y - enemies[k].y;
+                let d = Math.sqrt(dx * dx + dy * dy);
+                if (d < b.radius) {
+                  enemies[k].hp -= b.damage * 0.6;
+                  enemies[k].burn = Math.max(enemies[k].burn, 150);
+                }
+              }
+            }
+          }
+          if (b.type === 'pull') {
+            // Gravity Well pulls enemies toward impact
+            for (let k = 0; k < enemies.length; k++) {
+              if (k !== j) {
+                let dx = b.x - enemies[k].x, dy = b.y - enemies[k].y;
+                let d = Math.sqrt(dx * dx + dy * dy);
+                if (d < b.radius && d > 1) {
+                  enemies[k].x += dx / d * 3;
+                  enemies[k].y += dy / d * 3;
+                }
+              }
+            }
+          }
+
+          for (let k = 0; k < 3; k++) particles.push({ x: e.x, y: e.y, vx: (Math.random() - 0.5) * 4, vy: (Math.random() - 0.5) * 4, life: 20, color: b.color, size: 3 });
+          
+          if (b.pierce <= 0) {
+            bullets.splice(bullets.indexOf(b), 1);
+            return;
+          } else {
+            b.pierce--;
+          }
+        });
+      }
+
+      // Enemies
+      for (let i = enemies.length - 1; i >= 0; i--) {
+        let e = enemies[i];
+        if (e.flash > 0) e.flash--;
+
+        // Status effects
+        let speedMult = 1;
+        if (e.chill > 0) {
+          e.chill--;
+          speedMult = 0.5;
+        }
+        if (e.slowTime && e.slowTime > 0) {
+          e.slowTime--;
+          speedMult *= 0.3;
+        }
+        if (e.pushTime > 0) {
+          e.pushTime--;
+        } else {
+          e.vx = 0;
+          e.vy = 0;
+        }
+        if (e.burn > 0) {
+          e.burn--;
+          if (e.burn % 10 === 0) {
+            e.hp -= 5;
+            for (let k = 0; k < 2; k++) particles.push({ x: e.x, y: e.y, vx: (Math.random() - 0.5) * 3, vy: (Math.random() - 0.5) * 3, life: 15, color: '#f97316', size: 2 });
+          }
+        }
+
+        let dx = player.x - e.x, dy = player.y - e.y;
+        let d = Math.sqrt(dx * dx + dy * dy) || 1;
+        if (!e.pushTime || e.pushTime <= 0) {
+          e.x += dx / d * e.speed * speedMult;
+          e.y += dy / d * e.speed * speedMult;
+        }
+
+        // Hit player
+        if (d < e.radius + player.radius && player.invuln <= 0 && player.shielded <= 0) {
+          player.hp -= e.damage;
+          player.invuln = 30;
+          for (let k = 0; k < 6; k++) particles.push({ x: player.x, y: player.y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 25, color: '#ef4444', size: 4 });
+          if (player.hp <= 0) die();
+        } else if (d < e.radius + player.radius && player.shielded > 0) {
+          player.shielded = 0;
+          for (let k = 0; k < 10; k++) particles.push({ x: player.x + e.x, y: player.y + e.y, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6, life: 20, color: '#a78bfa', size: 3 });
+        }
+
+        if (e.hp <= 0) {
+          kills++;
+          enemiesRemaining--;
+          for (let k = 0; k < 8; k++) particles.push({ x: e.x, y: e.y, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6, life: 30, color: e.color, size: 4 + Math.random() * 3 });
+          if (Math.random() < 0.3) orbs.push({ x: e.x, y: e.y, type: 'heal', life: 300 });
+          enemies.splice(i, 1);
+        }
+      }
+
+      // Orbs
+      for (let i = orbs.length - 1; i >= 0; i--) {
+        let o = orbs[i];
+        o.life--;
+        if (o.life <= 0) { orbs.splice(i, 1); continue; }
+        let dx = player.x - o.x, dy = player.y - o.y;
+        if (dx * dx + dy * dy < 600) {
+          player.hp = Math.min(player.maxHp, player.hp + 15);
+          orbs.splice(i, 1);
+        }
+      }
+
+      // Particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vx *= 0.95;
+        p.vy *= 0.95;
+        p.life--;
+        if (p.life <= 0) particles.splice(i, 1);
+      }
+
+      // Damage numbers
+      for (let i = damageNumbers.length - 1; i >= 0; i--) {
+        let d = damageNumbers[i];
+        d.y -= 1.5;
+        d.life--;
+        if (d.life <= 0) damageNumbers.splice(i, 1);
+      }
+
+      // Wave complete
+      if (enemiesRemaining <= 0 && enemies.length === 0) {
+        wave++;
+        showUpgrades();
+      }
+
+      updateHud();
+    }
+
+    function die() {
+      gameState = 'dead';
+      document.getElementById('hud').style.display = 'none';
+      document.getElementById('death-stats').textContent = `Wave ${wave} • ${kills} souls collected`;
+      document.getElementById('death-screen').style.display = 'flex';
+    }
+
+    function showUpgrades() {
+      paused = true;
+      let panel = document.getElementById('upgrade-panel');
+      let opts = document.getElementById('upgrade-options');
+      opts.innerHTML = '';
+
+      let choices = [];
+      let availableSpells = SPELLS.filter(s => !spells.find(sp => sp.name === s.name));
+      
+      // New spell
+      if (availableSpells.length > 0 && Math.random() < 0.6) {
+        let s = availableSpells[Math.random() * availableSpells.length | 0];
+        choices.push({ label: `Learn: ${s.name}`, desc: `Dmg:${s.damage} Spd:${s.speed}`, action: () => { spells.push(s); } });
+      }
+
+      // Spell upgrades
+      spells.forEach(s => {
+        let upgradeName = s.name + '_v2';
+        if (!upgrades.spellUpgrades[upgradeName]) {
+          let desc = '';
+          if (s.name === 'Arcane Bolt') desc = 'Splits into 3 bolts';
+          if (s.name === 'Flame Burst') desc = 'Soul Flame - burns stronger';
+          if (s.name === 'Frost Shard') desc = 'Frozen Cascade - slowed enemies take more damage';
+          if (s.name === 'Chain Lightning') desc = 'Overcharge - bounces 5 times';
+          if (s.name === 'Meteor Storm') desc = 'Rain - 3x impact zones';
+          if (s.name === 'Icewave') desc = 'Arctic - spreads to nearby';
+          if (s.name === 'Spectral Beam') desc = 'Pierces more efficiently';
+          if (s.name === 'Inferno Ring') desc = 'Eternal Flame - stronger burn';
+          if (s.name === 'Gravity Well') desc = 'Singularity - pulls faster';
+          if (desc) choices.push({ label: `Upgrade: ${s.name}`, desc, action: () => { upgrades.spellUpgrades[upgradeName] = true; } });
+        }
+      });
+
+      // Stat upgrades
+      choices.push({ label: '+25% Damage', desc: 'Increase spell power', action: () => { upgrades.damage *= 1.25; } });
+      choices.push({ label: '+20% Speed', desc: 'Move faster', action: () => { upgrades.speed *= 1.2; } });
+      choices.push({ label: '+30 Max Mana', desc: 'Increase vitality', action: () => { upgrades.hp += 1; player.maxHp += 30; player.hp += 30; } });
+      choices.push({ label: '+10% Crit', desc: 'Random damage boost', action: () => { upgrades.crit = (upgrades.crit || 0) + 0.1; } });
+      choices.push({ label: '+35% Spell Range', desc: 'Projectiles travel further', action: () => { upgrades.range = (upgrades.range || 1) + 0.35; } });
+      choices.push({ label: 'Cooldown Reduction', desc: 'Spells recharge faster', action: () => { upgrades.cooldownReduc = (upgrades.cooldownReduc || 0) + 0.15; } });
+
+      choices.sort(() => Math.random() - 0.5);
+      choices = choices.slice(0, 3);
+
+      choices.forEach(c => {
+        let btn = document.createElement('button');
+        btn.style.cssText = 'background:#1a0533;border:1px solid #7c3aed;color:#e2c4ff;padding:10px 16px;border-radius:8px;cursor:pointer;font-family:Quicksand,sans-serif;font-size:14px;text-align:left;transition:background 0.2s;';
+        btn.innerHTML = `<strong>${c.label}</strong><br><span style="font-size:12px;color:#a78bfa;">${c.desc}</span>`;
+        btn.onmouseenter = () => btn.style.background = '#2d1055';
+        btn.onmouseleave = () => btn.style.background = '#1a0533';
+        btn.onclick = () => {
+          c.action();
+          panel.style.display = 'none';
+          if (wave % 3 === 0) showSecondaryUpgrades();
+          else {
+            paused = false;
+            spawnWave();
+          }
+        };
+        opts.appendChild(btn);
+      });
+      panel.style.display = 'block';
+    }
+
+    function showSecondaryUpgrades() {
+      let panel = document.getElementById('secondary-upgrade-panel');
+      let opts = document.getElementById('secondary-options');
+      opts.innerHTML = '';
+
+      let choices = [];
+      let available = SECONDARIES.filter(s => !secondaries.find(se => se.name === s.name));
+      
+      if (available.length > 0) {
+        let s = available[Math.random() * available.length | 0];
+        choices.push({ label: `Learn: ${s.name}`, desc: `Cooldown: ${s.cooldown}s`, action: () => { 
+          secondaries.push(Object.assign({}, s)); 
+          secondaryIndex = secondaries.length - 1;
+        } });
+      }
+
+      choices.push({ label: 'Stat Boost: +15% Speed', desc: 'Improve movement', action: () => { upgrades.speed *= 1.15; } });
+      choices.push({ label: 'Stat Boost: +20% Damage', desc: 'Improve damage', action: () => { upgrades.damage *= 1.2; } });
+      choices.push({ label: 'Secondary Cooldown -20%', desc: 'Abilities recharge faster', action: () => { upgrades.secondaryCooldown = (upgrades.secondaryCooldown || 0) + 0.2; } });
+      choices.push({ label: '+40 Max Mana', desc: 'More health pool', action: () => { player.maxHp += 40; player.hp += 40; } });
+      choices.push({ label: '+15% All Resistance', desc: 'Take less damage', action: () => { upgrades.defense = (upgrades.defense || 0) + 0.15; } });
+
+      choices.sort(() => Math.random() - 0.5);
+      choices = choices.slice(0, 2);
+
+      choices.forEach(c => {
+        let btn = document.createElement('button');
+        btn.style.cssText = 'background:#1a0533;border:1px solid #fbbf24;color:#fbbf24;padding:10px 16px;border-radius:8px;cursor:pointer;font-family:Quicksand,sans-serif;font-size:14px;text-align:left;transition:background 0.2s;';
+        btn.innerHTML = `<strong>${c.label}</strong><br><span style="font-size:12px;color:#fcd34d;">${c.desc}</span>`;
+        btn.onmouseenter = () => btn.style.background = '#3a2a00';
+        btn.onmouseleave = () => btn.style.background = '#1a0533';
+        btn.onclick = () => {
+          c.action();
+          panel.style.display = 'none';
+          paused = false;
+          spawnWave();
+        };
+        opts.appendChild(btn);
+      });
+      panel.style.display = 'block';
+    }
+
+    function updateHud() {
+      document.getElementById('hud-wave').textContent = `Wave: ${wave}`;
+      document.getElementById('hud-hp').textContent = `Mana: ${Math.max(0, player.hp)}/${player.maxHp}`;
+      document.getElementById('hud-kills').textContent = `Souls: ${kills}`;
+      document.getElementById('hud-spell').textContent = `Spell: ${spells[spellIndex].name} [${keybinds.switchSpell.toUpperCase()}/${keybinds.switchSpellBack.toUpperCase()}]`;
+      
+      let sec = secondaries[secondaryIndex];
+      let cdText = sec.activeCooldown > 0 ? ` [${Math.ceil(sec.activeCooldown / 10)}s]` : '';
+      document.getElementById('hud-secondary').textContent = `Secondary: ${sec.name} [${keybinds.secondary === ' ' ? 'SPACE' : keybinds.secondary.toUpperCase()}]${cdText}`;
+    }
+
+    function draw() {
+      ctx.fillStyle = '#050010';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Background grid
+      ctx.strokeStyle = '#1a053322';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < canvas.width; x += 60) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+      for (let y = 0; y < canvas.height; y += 60) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+
+      // Pause overlay
+      if (paused && gameState === 'playing') {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.font = 'bold 48px Cinzel, serif';
+        ctx.fillStyle = '#e2c4ff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 2 - 40);
+        ctx.font = '16px Quicksand, sans-serif';
+        ctx.fillStyle = '#a78bfa';
+        ctx.fillText('Press P to resume', canvas.width / 2, canvas.height / 2 + 40);
+        return;
+      }
+
+      // Orbs
+      orbs.forEach(o => {
+        ctx.globalAlpha = o.life < 60 ? o.life / 60 : 1;
+        ctx.beginPath();
+        ctx.arc(o.x, o.y, 8, 0, Math.PI * 2);
+        ctx.fillStyle = '#10b981';
+        ctx.shadowColor = '#10b981';
+        ctx.shadowBlur = 10;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
+      });
+
+      // Particles
+      particles.forEach(p => {
+        ctx.globalAlpha = p.life / 30;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * (p.life / 30), 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+
+      // Damage numbers
+      damageNumbers.forEach(d => {
+        ctx.globalAlpha = d.life / 60;
+        ctx.font = 'bold 20px Cinzel, serif';
+        ctx.fillStyle = d.color;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+        ctx.shadowBlur = 4;
+        ctx.fillText(d.damage, d.x, d.y);
+        ctx.shadowBlur = 0;
+      });
+      ctx.globalAlpha = 1;
+
+      // Bullets
+      bullets.forEach(b => {
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+        ctx.fillStyle = b.color;
+        ctx.shadowColor = b.color;
+        ctx.shadowBlur = 12;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+
+      // Enemies
+      enemies.forEach(e => {
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
+        let renderColor = e.color;
+        if (e.flash > 0) renderColor = '#ffffff';
+        else if (e.burn > 0) renderColor = '#ff6b35';
+        else if (e.chill > 0) renderColor = '#38d9ff';
+        ctx.fillStyle = renderColor;
+        ctx.shadowColor = e.color;
+        ctx.shadowBlur = 8;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        
+        // Burn aura effect
+        if (e.burn > 0) {
+          ctx.strokeStyle = `rgba(249, 115, 22, ${e.burn / 180})`;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(e.x, e.y, e.radius + 4, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        
+        // HP bar
+        let bw = e.radius * 2;
+        ctx.fillStyle = '#333';
+        ctx.fillRect(e.x - bw / 2, e.y - e.radius - 8, bw, 4);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(e.x - bw / 2, e.y - e.radius - 8, bw * (e.hp / e.maxHp), 4);
+      });
+
+      // Player
+      if (player.invuln % 4 < 2 || player.invuln === 0) {
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+        ctx.fillStyle = '#c084fc';
+        ctx.shadowColor = player.shielded > 0 ? '#10b981' : '#7c3aed';
+        ctx.shadowBlur = player.shielded > 0 ? 30 : 20;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        
+        // Shield ring
+        if (player.shielded > 0) {
+          ctx.strokeStyle = '#10b981';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(player.x, player.y, player.radius + 8, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        
+        let angle = Math.atan2(mouse.y - player.y, mouse.x - player.x);
+        ctx.beginPath();
+        ctx.arc(player.x + Math.cos(angle) * 7, player.y + Math.sin(angle) * 7, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+      }
+    }
+
+    function loop() {
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    // Menu
+    loadKeybinds();
+    document.getElementById('play-btn').onclick = () => {
+      document.getElementById('start-screen').style.display = 'none';
+      init();
+      loop();
+    };
+    document.getElementById('settings-btn').onclick = () => {
+      document.getElementById('start-screen').style.display = 'none';
+      document.getElementById('settings-screen').style.display = 'block';
+    };
+    document.getElementById('instructions-btn').onclick = () => {
+      document.getElementById('start-screen').style.display = 'none';
+      document.getElementById('instructions-screen').style.display = 'block';
+    };
+    document.getElementById('restart-btn').onclick = () => {
+      document.getElementById('death-screen').style.display = 'none';
+      document.getElementById('start-screen').style.display = 'flex';
+      location.reload();
+    };
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9f79d8998390cdc4',t:'MTc3ODA5MDAyNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
