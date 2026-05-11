@@ -339,7 +339,7 @@
       <span class="feature-pill">Menu + settings shell ready</span>
      </div>
      <div class="menu-actions">
-      <button id="play-btn" class="menu-button primary">Begin Run</button>
+      <button id="play-btn" class="menu-button primary">Start Game</button>
       <button id="settings-btn" class="menu-button secondary">Settings</button>
       <button id="instructions-btn" class="menu-button ghost">Guide</button>
      </div>
@@ -543,6 +543,14 @@
     <div id="upgrade-options" style="display:flex;flex-direction:column;gap:12px;"></div>
    </div>
   </div><!-- SECONDARY UPGRADE PANEL -->
+  <div id="spell-replace-panel" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Quicksand',sans-serif;z-index:320;">
+   <div style="background:rgba(15,5,30,0.96);border:2px solid #a78bfa;border-radius:12px;padding:24px;text-align:center;min-width:420px;box-shadow:0 0 40px #a78bfa55;">
+    <h2 style="color:#e2c4ff;font-family:'Cinzel',serif;font-size:22px;margin:0 0 10px;letter-spacing:1px;text-transform:uppercase;">Replace A Spell</h2>
+    <p id="replace-panel-copy" style="margin:0 0 14px;color:#c4b5fd;">Choose a spell slot to replace.</p>
+    <div id="spell-replace-options" style="display:flex;flex-direction:column;gap:10px;"></div>
+    <button id="spell-replace-cancel" class="menu-button ghost" style="margin-top:12px;">Keep Current Spells</button>
+   </div>
+  </div><!-- SECONDARY UPGRADE PANEL -->
   <div id="secondary-upgrade-panel" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Quicksand',sans-serif;z-index:100;">
    <div style="background:rgba(15,5,30,0.95);border:2px solid #fbbf24;border-radius:12px;padding:24px;text-align:center;min-width:400px;box-shadow:0 0 40px #fbbf2455;">
     <h2 style="color:#fbbf24;font-family:'Cinzel',serif;font-size:22px;margin:0 0 20px;letter-spacing:1px;text-transform:uppercase;">⚡ Power Enhancement</h2>
@@ -576,6 +584,10 @@
   <script type="module">
     import { initSettingsUI, settings, keybinds } from './src/settings.js';
     import { createAudioController } from './src/audio.js';
+    import { createEngine } from './src/engine.js';
+    import { drawFrame } from './src/renderer.js';
+    import { buildWaveSpawnPlan, createEnemyEntity } from './src/combat.js';
+    import { simulateWaveSummary } from './src/dev-mode.js';
 
     // Element SDK
     const defaultConfig = {
@@ -619,7 +631,7 @@
     });
 
     const audioController = createAudioController(() => settings.audio);
-    const { applyAudioSettings, playUiSound, startMenuMusic, stopMenuMusic } = audioController;
+    const { applyAudioSettings, playUiSound, startMenuMusic, stopMenuMusic, triggerTone } = audioController;
 
     function openMenuScreen(screenId) {
       ['start-screen', 'settings-screen', 'instructions-screen'].forEach(id => {
@@ -634,13 +646,28 @@
       }
     }
 
-    initSettingsUI({
-      openMenuScreen,
-      playUiSound,
-      applyAudioSettings,
-      startMenuMusic,
-      stopMenuMusic
-    });
+    // Dev-mode helpers are available in browser console:
+    // window.soulforgeDev.wave(10)
+    window.soulforgeDev = {
+      wave: (waveNumber) => simulateWaveSummary(Number(waveNumber) || 1),
+      waveRange: (start = 1, end = 10) => {
+        const output = [];
+        for (let w = start; w <= end; w++) output.push(simulateWaveSummary(w));
+        return output;
+      }
+    };
+
+    try {
+      initSettingsUI({
+        openMenuScreen,
+        playUiSound,
+        applyAudioSettings,
+        startMenuMusic,
+        stopMenuMusic
+      });
+    } catch (error) {
+      console.error('Settings initialization failed', error);
+    }
 
     function updatePauseUi() {
       const el = document.getElementById('pause-stats');
@@ -661,9 +688,12 @@
       document.getElementById('pause-screen').style.display = 'none';
     }
 
-    document.getElementById('pause-resume').addEventListener('click', () => { closePauseMenu(); playUiSound(); });
-    document.getElementById('pause-settings').addEventListener('click', () => { openMenuScreen('settings-screen'); playUiSound(); });
-    document.getElementById('pause-menu').addEventListener('click', () => { document.getElementById('pause-screen').style.display = 'none'; openMenuScreen('start-screen'); gameState = 'menu'; playUiSound(); });
+    const pauseResumeBtn = document.getElementById('pause-resume');
+    const pauseSettingsBtn = document.getElementById('pause-settings');
+    const pauseMenuBtn = document.getElementById('pause-menu');
+    if (pauseResumeBtn) pauseResumeBtn.addEventListener('click', () => { closePauseMenu(); playUiSound(); });
+    if (pauseSettingsBtn) pauseSettingsBtn.addEventListener('click', () => { openMenuScreen('settings-screen'); playUiSound(); });
+    if (pauseMenuBtn) pauseMenuBtn.addEventListener('click', () => { document.getElementById('pause-screen').style.display = 'none'; openMenuScreen('start-screen'); gameState = 'menu'; playUiSound(); });
 
     // GAME ENGINE
     const canvas = document.getElementById('game');
@@ -707,8 +737,7 @@
 
     // Game state
     let player, bullets, enemies, particles, orbs, gameState, wave, kills, spellIndex, spells, upgrades, waveTimer, enemiesRemaining, paused, secondaryIndex, secondaries, damageNumbers;
-    let lastFrameTime = 0;
-    let gameLoopStarted = false;
+    let gameEngine;
 
     const SPELLS = [
       { name: 'Arcane Bolt', color: '#a78bfa', speed: 12, damage: 10, size: 5, cooldown: 8, pierce: 0, type: 'basic', traits: ['arcane'] },
@@ -818,54 +847,22 @@
     }
 
     function spawnWave() {
-      const base = 3 + Math.floor(wave * 1.6);
-      let count = base;
-      enemiesRemaining = count;
-      for (let i = 0; i < count; i++) {
-        setTimeout(() => spawnEnemy(), i * 400);
-      }
-      // miniboss every 5, boss every 10
-      if (wave % 10 === 0) {
-        // boss
-        setTimeout(() => spawnEnemy('boss'), (count + 0.5) * 400);
-        enemiesRemaining++;
-      } else if (wave % 5 === 0) {
-        setTimeout(() => spawnEnemy('mini'), (count + 0.5) * 400);
-        enemiesRemaining++;
-      }
+      const plan = buildWaveSpawnPlan(wave);
+      enemiesRemaining = plan.length;
+      plan.forEach(step => {
+        setTimeout(() => spawnEnemy(step.kind), step.delayMs);
+      });
     }
 
-    function spawnEnemy(miniOrBoss) {
+    function spawnEnemy(kindOverride) {
       let side = Math.random() * 4 | 0;
       let x, y;
       if (side === 0) { x = -30; y = Math.random() * canvas.height; }
       else if (side === 1) { x = canvas.width + 30; y = Math.random() * canvas.height; }
       else if (side === 2) { x = Math.random() * canvas.width; y = -30; }
       else { x = Math.random() * canvas.width; y = canvas.height + 30; }
-      // enemy definitions
-      const types = {
-        goblin: { hp: 18 + wave * 2, speed: 1.6, radius: 12, color: '#10b981', name: 'Goblin', damage: 6 },
-        gremlin: { hp: 12 + wave * 1.6, speed: 2.1, radius: 10, color: '#86efac', name: 'Gremlin', damage: 4 },
-        orc: { hp: 36 + wave * 4, speed: 1.1, radius: 18, color: '#ef4444', name: 'Orc', damage: 12 },
-        troll: { hp: 180 + wave * 12, speed: 0.6, radius: 28, color: '#14532d', name: 'Troll', damage: 30 },
-        oni: { hp: 520 + wave * 40, speed: 1.6, radius: 36, color: '#7f1d1d', name: 'Oni King', damage: 55 }
-      };
-
-      let pick;
-      if (miniOrBoss === 'boss') pick = types.oni;
-      else if (miniOrBoss === 'mini') pick = types.troll;
-      else {
-        let r = Math.random();
-        if (r < 0.55) pick = types.goblin;
-        else if (r < 0.75) pick = types.gremlin;
-        else pick = types.orc;
-      }
-
-      enemies.push({ 
-        x, y, hp: pick.hp, maxHp: pick.hp, speed: pick.speed, radius: pick.radius, color: pick.color, damage: pick.damage, flash: 0,
-        kind: pick.name,
-        burn: 0, chill: 0, chainedFrom: -1
-      });
+      const kind = kindOverride || 'Goblin';
+      enemies.push(createEnemyEntity({ kind, wave, x, y }));
     }
 
     function shoot() {
@@ -1374,6 +1371,47 @@
       let opts = document.getElementById('upgrade-options');
       opts.innerHTML = '';
 
+      function finishUpgradeSelection() {
+        panel.style.display = 'none';
+        if (wave % 3 === 0) showSecondaryUpgrades();
+        else {
+          paused = false;
+          spawnWave();
+        }
+      }
+
+      function openSpellReplacePanel(newSpell, onDone) {
+        const replacePanel = document.getElementById('spell-replace-panel');
+        const replaceOptions = document.getElementById('spell-replace-options');
+        const replaceCopy = document.getElementById('replace-panel-copy');
+        const cancelBtn = document.getElementById('spell-replace-cancel');
+        if (!replacePanel || !replaceOptions || !cancelBtn) {
+          onDone(false);
+          return;
+        }
+
+        if (replaceCopy) replaceCopy.textContent = `Choose one of your current spells to replace with ${newSpell.name}.`;
+        replaceOptions.innerHTML = '';
+        spells.forEach((existingSpell, i) => {
+          const btn = document.createElement('button');
+          btn.style.cssText = 'background:#1a0533;border:1px solid #a78bfa;color:#e2c4ff;padding:10px 12px;border-radius:8px;cursor:pointer;font-family:Quicksand,sans-serif;font-size:14px;text-align:left;';
+          btn.textContent = `${i + 1}. ${existingSpell.name}`;
+          btn.onclick = () => {
+            spells[i] = newSpell;
+            replacePanel.style.display = 'none';
+            onDone(true);
+          };
+          replaceOptions.appendChild(btn);
+        });
+
+        cancelBtn.onclick = () => {
+          replacePanel.style.display = 'none';
+          onDone(false);
+        };
+
+        replacePanel.style.display = 'block';
+      }
+
       let choices = [];
       let availableSpells = SPELLS.filter(s => !spells.find(sp => sp.name === s.name));
       
@@ -1381,15 +1419,19 @@
       if (availableSpells.length > 0) {
         let s = availableSpells[Math.random() * availableSpells.length | 0];
         choices.push({ label: `Learn: ${s.name}`, desc: `Dmg:${s.damage} Spd:${s.speed}`, action: () => {
-          if (spells.length < 5) spells.push(s);
-          else {
-            if (!confirm('You already have 5 spells. Replace one?')) return;
-            const names = spells.map((p, i) => `${i+1}: ${p.name}`).join('\n');
-            const pick = parseInt(prompt('Choose spell slot to replace:\n' + names + '\nEnter slot number (1-5):'));
-            if (!isNaN(pick) && pick >= 1 && pick <= spells.length) spells[pick-1] = s;
+          if (spells.length < 5) {
+            spells.push(s);
+            try { computeSynergies(); applyPassiveArtifacts(); } catch (err) {}
+            return 'done';
           }
-          // recompute synergies and passive effects after change
-          try { computeSynergies(); applyPassiveArtifacts(); } catch (err) {}
+
+          openSpellReplacePanel(s, (didReplace) => {
+            if (didReplace) {
+              try { computeSynergies(); applyPassiveArtifacts(); } catch (err) {}
+            }
+            finishUpgradeSelection();
+          });
+          return 'defer';
         } });
       }
 
@@ -1438,13 +1480,9 @@
         btn.onmouseenter = () => btn.style.background = '#2d1055';
         btn.onmouseleave = () => btn.style.background = '#1a0533';
         btn.onclick = () => {
-          c.action();
-          panel.style.display = 'none';
-          if (wave % 3 === 0) showSecondaryUpgrades();
-          else {
-            paused = false;
-            spawnWave();
-          }
+          const result = c.action();
+          if (result === 'defer') return;
+          finishUpgradeSelection();
         };
         opts.appendChild(btn);
       });
@@ -1464,6 +1502,7 @@
         choices.push({ label: `Learn: ${s.name}`, desc: `Cooldown: ${s.cooldown}s`, action: () => { 
           secondaries.push(Object.assign({}, s)); 
           secondaryIndex = secondaries.length - 1;
+          applyPassiveArtifacts();
         } });
       }
 
@@ -1506,173 +1545,27 @@
     }
 
     function draw() {
-      ctx.fillStyle = '#050010';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Background grid
-      ctx.strokeStyle = '#1a053322';
-      ctx.lineWidth = 1;
-      for (let x = 0; x < canvas.width; x += 60) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
-      for (let y = 0; y < canvas.height; y += 60) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
-
-      // Pause overlay
-      if (paused && gameState === 'playing') {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.font = 'bold 48px Cinzel, serif';
-        ctx.fillStyle = '#e2c4ff';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 2 - 40);
-        ctx.font = '16px Quicksand, sans-serif';
-        ctx.fillStyle = '#a78bfa';
-        ctx.fillText('Press P to resume', canvas.width / 2, canvas.height / 2 + 40);
-        return;
-      }
-
-      // Orbs
-      orbs.forEach(o => {
-        ctx.globalAlpha = o.life < 60 ? o.life / 60 : 1;
-        ctx.beginPath();
-        ctx.arc(o.x, o.y, 8, 0, Math.PI * 2);
-        ctx.fillStyle = '#10b981';
-        ctx.shadowColor = '#10b981';
-        ctx.shadowBlur = 10;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-        ctx.globalAlpha = 1;
+      drawFrame({
+        ctx,
+        canvas,
+        state: { paused, gameState, player, orbs, particles, damageNumbers, bullets, enemies, mouse },
+        settings,
+        glyphForEnemy,
+        glyphForBullet
       });
-
-      // Particles
-      particles.forEach(p => {
-        ctx.globalAlpha = p.life / 30;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * (p.life / 30), 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.fill();
-      });
-      ctx.globalAlpha = 1;
-
-      // Damage numbers
-      damageNumbers.forEach(d => {
-        ctx.globalAlpha = d.life / 60;
-        ctx.font = 'bold 20px Cinzel, serif';
-        ctx.fillStyle = d.color;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-        ctx.shadowBlur = 4;
-        ctx.fillText(d.damage, d.x, d.y);
-        ctx.shadowBlur = 0;
-      });
-      ctx.globalAlpha = 1;
-
-      // Bullets
-      bullets.forEach(b => {
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
-        ctx.fillStyle = b.color;
-        ctx.shadowColor = b.color;
-        ctx.shadowBlur = 12;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-        const bulletGlyph = glyphForBullet(b);
-        if (bulletGlyph) {
-          ctx.fillStyle = '#f8f5ff';
-          ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
-          ctx.shadowBlur = 3;
-          ctx.font = 'bold 12px Quicksand, sans-serif';
-          ctx.fillText(bulletGlyph, b.x, b.y + 4);
-          ctx.shadowBlur = 0;
-        }
-      });
-
-      // Enemies
-      enemies.forEach(e => {
-        ctx.beginPath();
-        ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
-        let renderColor = e.color;
-        if (e.flash > 0) renderColor = '#ffffff';
-        else if (e.burn > 0) renderColor = '#ff6b35';
-        else if (e.chill > 0) renderColor = '#38d9ff';
-        ctx.fillStyle = renderColor;
-        ctx.shadowColor = e.color;
-        ctx.shadowBlur = 8;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-        const enemyGlyph = glyphForEnemy(e);
-        if (enemyGlyph) {
-          ctx.fillStyle = '#f8f5ff';
-          ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
-          ctx.shadowBlur = 4;
-          ctx.font = 'bold 16px Cinzel, serif';
-          ctx.fillText(enemyGlyph, e.x, e.y + 5);
-          ctx.shadowBlur = 0;
-        }
-        
-        // Burn aura effect
-        if (e.burn > 0) {
-          ctx.strokeStyle = `rgba(249, 115, 22, ${e.burn / 180})`;
-          ctx.lineWidth = 3;
-          ctx.beginPath();
-          ctx.arc(e.x, e.y, e.radius + 4, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-        
-        // HP bar
-        let bw = e.radius * 2;
-        ctx.fillStyle = '#333';
-        ctx.fillRect(e.x - bw / 2, e.y - e.radius - 8, bw, 4);
-        ctx.fillStyle = '#ef4444';
-        ctx.fillRect(e.x - bw / 2, e.y - e.radius - 8, bw * (e.hp / e.maxHp), 4);
-      });
-
-      // Player
-      if (player.invuln % 4 < 2 || player.invuln === 0) {
-        ctx.beginPath();
-        ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-        ctx.fillStyle = '#c084fc';
-        ctx.shadowColor = player.shielded > 0 ? '#10b981' : '#7c3aed';
-        ctx.shadowBlur = player.shielded > 0 ? 30 : 20;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-        
-        // Shield ring
-        if (player.shielded > 0) {
-          ctx.strokeStyle = '#10b981';
-          ctx.lineWidth = 3;
-          ctx.beginPath();
-          ctx.arc(player.x, player.y, player.radius + 8, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-        
-        let angle = Math.atan2(mouse.y - player.y, mouse.x - player.x);
-        ctx.beginPath();
-        ctx.arc(player.x + Math.cos(angle) * 7, player.y + Math.sin(angle) * 7, 4, 0, Math.PI * 2);
-        ctx.fillStyle = '#fff';
-        ctx.fill();
-      }
     }
 
-    function loop(timestamp = 0) {
-      const frameCap = Math.max(30, settings.visuals.frameCap || 60);
-      const frameDelay = 1000 / frameCap;
-      if (timestamp - lastFrameTime >= frameDelay) {
-        update();
-        draw();
-        lastFrameTime = timestamp;
-      }
-      requestAnimationFrame(loop);
-    }
+    gameEngine = createEngine({
+      getFrameCap: () => settings.visuals.frameCap || 60,
+      update,
+      draw
+    });
 
     // Menu
     document.getElementById('play-btn').onclick = () => {
       openMenuScreen('game');
       init();
-      if (!gameLoopStarted) {
-        gameLoopStarted = true;
-        requestAnimationFrame(loop);
-      }
+      if (gameEngine && !gameEngine.isStarted()) gameEngine.start();
       startMenuMusic();
       playUiSound();
     };
