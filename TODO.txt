@@ -1,0 +1,32 @@
+SoulForge TODO
+
+Core Game
+- Replace the prototype combat loop with a real roguelike run structure.
+- Add a proper start-to-finish run flow with stages, rewards, and win/lose conditions.
+- Implement stronger enemy variety, behaviors, and boss fights.
+- Expand the spell system with clearer balancing and distinct upgrade paths.
+- Add actual run progression, meta progression, and unlocks.
+
+Menu and UI
+- Add a true pause menu and in-run settings access.
+- Add confirmation prompts for reset and quit actions.
+- Improve the guide screen with shorter, clearer onboarding text.
+- Add save/load or profile support for settings and progression.
+- Add a proper options preview for visual symbol styles.
+
+Audio
+- Replace the placeholder synth loop with authored music tracks.
+- Add distinct SFX for hits, kills, upgrades, UI hover, and menu navigation.
+- Add mute and audio device recovery handling.
+
+Accessibility and Polish
+- Test the color-blind modes against more spell and enemy combinations.
+- Add more accessibility options such as screen shake, flash reduction, and contrast presets.
+- Add mobile and controller support.
+- Add responsive layout tuning for small screens.
+- Add loading and transition polish for menu-to-run handoff.
+
+Production
+- Split the remaining gameplay runtime into smaller modules as the codebase grows.
+- Add automated linting or validation for the inline game script.
+- Add visual tests or manual test notes for the menu/settings flow.

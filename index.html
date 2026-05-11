@@ -3,7 +3,7 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spellforge</title>
+  <title>SoulForge</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="/_sdk/element_sdk.js"></script>
   <style>
@@ -13,6 +13,288 @@
     .menu-btn { background: linear-gradient(135deg, #7c3aed, #5b21b6); color: #fff; border: none; padding: 12px 32px; border-radius: 8px; font-size: 16px; font-family: 'Cinzel', serif; cursor: pointer; box-shadow: 0 0 20px #7c3aed88; transition: all 0.3s; }
     .menu-btn:hover { box-shadow: 0 0 30px #7c3aedcc; transform: scale(1.05); }
     .keybind-input { background: #1a0533; border: 1px solid #7c3aed; color: #e2c4ff; padding: 8px 12px; border-radius: 6px; font-family: 'Quicksand', sans-serif; font-size: 14px; width: 100%; max-width: 150px; }
+    :root {
+      --bg-0: #050010;
+      --bg-1: #0f0620;
+      --panel: rgba(17, 8, 33, 0.92);
+      --panel-strong: rgba(28, 12, 50, 0.98);
+      --border: rgba(124, 58, 237, 0.45);
+      --text: #f3e8ff;
+      --muted: #c4b5fd;
+      --accent: #8b5cf6;
+      --accent-2: #22d3ee;
+      --warning: #fbbf24;
+    }
+    body {
+      background:
+        radial-gradient(circle at top, rgba(139, 92, 246, 0.18), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(34, 211, 238, 0.12), transparent 28%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-0));
+      color: var(--text);
+      font-family: 'Quicksand', sans-serif;
+    }
+    .screen-shell {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 200;
+    }
+    .card-shell {
+      width: min(1120px, 100%);
+      background: linear-gradient(180deg, rgba(25, 10, 44, 0.94), rgba(10, 5, 24, 0.95));
+      border: 1px solid var(--border);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      border-radius: 28px;
+      backdrop-filter: blur(18px);
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+      gap: 28px;
+      padding: 32px;
+    }
+    .title-font { font-family: 'Cinzel', serif; }
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.35em;
+      color: var(--warning);
+      font-size: 12px;
+      margin-bottom: 14px;
+    }
+    .hero-title {
+      margin: 0;
+      font-size: clamp(56px, 10vw, 108px);
+      line-height: 0.92;
+      color: #f5e8ff;
+      text-shadow: 0 0 30px rgba(124, 58, 237, 0.8), 0 0 80px rgba(91, 33, 182, 0.65);
+    }
+    .hero-copy {
+      max-width: 52ch;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.8;
+      margin: 18px 0 0;
+    }
+    .feature-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+    .feature-pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(167, 139, 250, 0.25);
+      background: rgba(124, 58, 237, 0.12);
+      color: #efe4ff;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+    .menu-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 30px;
+    }
+    .menu-button {
+      border-radius: 14px;
+      padding: 14px 20px;
+      border: 1px solid transparent;
+      font-family: 'Cinzel', serif;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+    .menu-button:hover { transform: translateY(-1px); }
+    .menu-button.primary {
+      background: linear-gradient(135deg, #8b5cf6, #5b21b6);
+      color: #fff;
+      box-shadow: 0 14px 28px rgba(124, 58, 237, 0.25);
+    }
+    .menu-button.secondary {
+      background: linear-gradient(135deg, #1e1b4b, #312e81);
+      color: #eef2ff;
+      border-color: rgba(99, 102, 241, 0.35);
+    }
+    .menu-button.ghost {
+      background: rgba(255, 255, 255, 0.03);
+      color: #f5e8ff;
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+    .side-card {
+      padding: 22px;
+      border-radius: 22px;
+      background: var(--panel);
+      border: 1px solid rgba(124, 58, 237, 0.16);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      justify-content: space-between;
+    }
+    .side-stat {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(5, 0, 16, 0.52);
+      border: 1px solid rgba(167, 139, 250, 0.14);
+    }
+    .side-stat .label {
+      color: #fbbf24;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      margin-bottom: 8px;
+    }
+    .side-stat .value {
+      color: #f8f5ff;
+      font-size: 20px;
+      font-family: 'Cinzel', serif;
+      margin-bottom: 4px;
+    }
+    .side-stat .hint {
+      color: #c4b5fd;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      min-height: 640px;
+    }
+    .settings-nav {
+      padding: 24px;
+      background: rgba(5, 0, 16, 0.38);
+      border-right: 1px solid rgba(124, 58, 237, 0.14);
+      border-radius: 28px 0 0 28px;
+    }
+    .settings-tab-btn {
+      width: 100%;
+      margin-bottom: 12px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.03);
+      color: #e9d5ff;
+      cursor: pointer;
+      text-align: left;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.06em;
+    }
+    .settings-tab-btn.active {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.24), rgba(34, 211, 238, 0.12));
+      border-color: rgba(139, 92, 246, 0.4);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    }
+    .settings-stage {
+      padding: 24px;
+    }
+    .settings-panel {
+      display: none;
+      gap: 18px;
+    }
+    .settings-panel.active {
+      display: grid;
+      gap: 18px;
+    }
+    .setting-card {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(5, 0, 16, 0.42);
+      border: 1px solid rgba(124, 58, 237, 0.14);
+    }
+    .setting-row {
+      display: grid;
+      gap: 10px;
+    }
+    .setting-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .setting-head h3,
+    .setting-head h4 {
+      margin: 0;
+    }
+    .setting-head p {
+      margin: 0;
+      color: #c4b5fd;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .setting-value {
+      color: #fbbf24;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+    .range-row input[type='range'] {
+      width: 100%;
+      accent-color: #8b5cf6;
+    }
+    .toggle-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(124, 58, 237, 0.12);
+      color: #f5e8ff;
+      font-size: 12px;
+    }
+    .keybind-grid {
+      display: grid;
+      gap: 10px;
+    }
+    .keybind-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(167, 139, 250, 0.12);
+    }
+    .keybind-row label {
+      color: #e9d5ff;
+      font-weight: 600;
+    }
+    .keybind-button {
+      min-width: 110px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      background: rgba(124, 58, 237, 0.14);
+      color: #fff;
+      cursor: pointer;
+      font-family: 'Quicksand', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .keybind-button.binding {
+      border-color: #22d3ee;
+      box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.4), 0 0 24px rgba(34, 211, 238, 0.24);
+    }
+    .settings-footer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 14px;
+    }
+    .settings-footer .helper {
+      color: #c4b5fd;
+      font-size: 13px;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js" type="text/javascript"></script>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
@@ -27,9 +309,12 @@
    <div id="hud-wave" style="font-size:13px;">
     Wave: 1
    </div>
-   <div id="hud-hp" style="font-size:13px;">
-    Mana: 100/100
-   </div>
+  <div id="hud-hp" style="font-size:13px;">
+   Health: 100/100
+  </div>
+  <div id="hud-mana" style="font-size:13px;color:#67e8f9;">
+   Mana: 100/100
+  </div>
    <div id="hud-kills" style="font-size:13px;">
     Souls: 0
    </div>
@@ -41,61 +326,164 @@
    </div>
    <div id="hud-secondary-cd" style="font-size:12px;color:#f97316;"></div>
   </div><!-- START/MAIN MENU -->
-  <div id="start-screen" style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f0620 0%,#1a0533 50%,#0f0620 100%);z-index:200;flex-direction:column;">
-   <div style="text-align:center;font-family:'Cinzel',serif;animation:fadeIn 0.8s ease-in;">
-    <div style="margin-bottom:16px;font-size:14px;letter-spacing:3px;color:#8b5cf6;text-transform:uppercase;">
-     Welcome to
-    </div>
-    <h1 id="start-title" style="font-size:64px;color:#e2c4ff;text-shadow:0 0 40px #7c3aed,0 0 80px #5b21b6,0 0 120px #7c3aed;margin:0 0 4px;letter-spacing:2px;font-weight:900;">SPELLFORGE</h1>
-    <div style="height:3px;width:120px;background:linear-gradient(90deg,transparent,#7c3aed,transparent);margin:16px auto 24px;"></div>
-    <p style="color:#a78bfa;font-family:'Quicksand',sans-serif;margin:0 0 48px;font-size:15px;font-weight:500;letter-spacing:0.5px;">Master the art of combat magic. Survive endless waves. Become a legend.</p>
-    <div style="display:flex;flex-direction:column;gap:14px;align-items:center;"><button id="play-btn" class="menu-btn" style="padding:14px 48px;font-size:18px;letter-spacing:1px;background:linear-gradient(135deg,#7c3aed,#5b21b6);box-shadow:0 0 30px #7c3aed88,inset 0 0 20px #7c3aed22;">BEGIN ADVENTURE</button>
-     <div style="display:flex;gap:12px;margin-top:12px;"><button id="settings-btn" class="menu-btn" style="background:linear-gradient(135deg,#4f46e5,#3730a3);font-size:14px;">⚙ Settings</button> <button id="instructions-btn" class="menu-btn" style="background:linear-gradient(135deg,#6b21a8,#581c87);font-size:14px;">? Guide</button>
+  <div id="start-screen" class="screen-shell" style="display:flex;">
+   <div class="card-shell hero-grid">
+    <div>
+     <div class="eyebrow">Forged for the arcane</div>
+     <h1 id="start-title" class="hero-title title-font">SOULFORGE</h1>
+     <p class="hero-copy">Enter a fast-moving magic roguelike built around spell swapping, survival waves, and a growing arsenal of runes, relics, and powers.</p>
+     <div class="feature-row">
+      <span class="feature-pill">12 spells to discover</span>
+      <span class="feature-pill">7 secondary abilities</span>
+      <span class="feature-pill">Accessibility-first visuals</span>
+      <span class="feature-pill">Menu + settings shell ready</span>
+     </div>
+     <div class="menu-actions">
+      <button id="play-btn" class="menu-button primary">Begin Run</button>
+      <button id="settings-btn" class="menu-button secondary">Settings</button>
+      <button id="instructions-btn" class="menu-button ghost">Guide</button>
      </div>
     </div>
-    <div style="margin-top:48px;font-size:12px;color:#6b7280;font-family:'Quicksand',sans-serif;">
-     12 Unique Spells • 7 Abilities • Infinite Waves
-    </div>
+    <aside class="side-card">
+     <div class="side-stat">
+      <div class="label">Mode</div>
+      <div class="value">Roguelike Prototype</div>
+      <div class="hint">Wave-based combat, spell upgrades, and an evolving build loop are already wired into the scene.</div>
+     </div>
+     <div class="side-stat">
+      <div class="label">Accessibility</div>
+      <div class="value">Colorblind Support</div>
+      <div class="hint">Visual symbols, adjustable particle density, and frame caps help keep the game readable on more displays.</div>
+     </div>
+     <div class="side-stat">
+      <div class="label">Audio</div>
+      <div class="value">Master / Music / SFX</div>
+      <div class="hint">Volume sliders and background music toggles are included in the new settings flow.</div>
+     </div>
+    </aside>
    </div>
-   <style>
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    #start-screen > div { animation: fadeIn 0.8s ease-in; }
-   </style>
   </div><!-- SETTINGS MENU -->
-  <div id="settings-screen" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0f0620,#1a0533);z-index:250;overflow-y:auto;padding:40px 20px;">
-   <div style="max-width:600px;margin:0 auto;font-family:'Cinzel',serif;">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:32px;">
-     <div style="font-size:28px;color:#7c3aed;">
-      ⚙
+  <div id="settings-screen" class="screen-shell" style="display:none;">
+   <div class="card-shell settings-grid">
+    <div class="settings-nav">
+     <div style="margin-bottom:18px;">
+      <div class="eyebrow" style="margin-bottom:8px;">Configure the forge</div>
+      <h1 class="title-font" style="margin:0;color:#f5e8ff;font-size:32px;">Settings</h1>
+      <p style="margin:12px 0 0;color:#c4b5fd;line-height:1.7;">Tune visuals, audio, and controls before you begin a run. All changes save locally in your browser.</p>
      </div>
-     <h1 style="color:#e2c4ff;font-size:36px;margin:0;">SETTINGS</h1>
+     <button class="settings-tab-btn active" data-settings-tab="visuals">Visuals</button>
+     <button class="settings-tab-btn" data-settings-tab="audio">Audio</button>
+     <button class="settings-tab-btn" data-settings-tab="controls">Controls</button>
+     <div class="settings-footer" style="margin-top:22px;">
+      <button id="settings-back-btn" class="menu-button secondary" type="button">Back</button>
+      <button id="settings-reset-btn" class="menu-button ghost" type="button">Reset</button>
+     </div>
     </div>
-    <div style="background:linear-gradient(135deg,#1a0533,#2d1055);border:2px solid #7c3aed;border-radius:16px;padding:28px;box-shadow:0 0 40px #7c3aed22;">
-     <div style="margin-bottom:32px;">
-      <h3 style="color:#a78bfa;font-size:18px;margin:0 0 16px;letter-spacing:1px;text-transform:uppercase;">Keybinds</h3>
-      <div style="background:#050010;border-radius:12px;padding:16px;space-y:20px;">
-       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #3a2a55;"><label style="color:#c084fc;font-size:14px;font-weight:600;">Move Up</label> <input class="keybind-input" id="key-up" maxlength="1" value="W" style="max-width:60px;">
+    <div class="settings-stage">
+     <section class="settings-panel active" id="settings-panel-visuals">
+      <div class="setting-card">
+       <div class="setting-head">
+        <div>
+         <h3 class="title-font">Color-blind friendly symbols</h3>
+         <p>Swap spell and enemy color cues for clearer shapes and labels.</p>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #3a2a55;"><label style="color:#c084fc;font-size:14px;font-weight:600;">Move Down</label> <input class="keybind-input" id="key-down" maxlength="1" value="S" style="max-width:60px;">
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #3a2a55;"><label style="color:#c084fc;font-size:14px;font-weight:600;">Move Left</label> <input class="keybind-input" id="key-left" maxlength="1" value="A" style="max-width:60px;">
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #3a2a55;"><label style="color:#c084fc;font-size:14px;font-weight:600;">Move Right</label> <input class="keybind-input" id="key-right" maxlength="1" value="D" style="max-width:60px;">
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #3a2a55;"><label style="color:#c084fc;font-size:14px;font-weight:600;">Cast Spell</label> <span style="color:#fbbf24;font-size:14px;font-weight:600;">Mouse Click</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #3a2a55;"><label style="color:#c084fc;font-size:14px;font-weight:600;">Secondary Ability</label> <input class="keybind-input" id="key-secondary" maxlength="1" value=" " style="max-width:60px;">
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #3a2a55;"><label style="color:#c084fc;font-size:14px;font-weight:600;">Switch Spell Forward</label> <input class="keybind-input" id="key-switch" maxlength="1" value="Q" style="max-width:60px;">
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;"><label style="color:#c084fc;font-size:14px;font-weight:600;">Switch Spell Backward</label> <input class="keybind-input" id="key-switch-back" maxlength="1" value="E" style="max-width:60px;">
-        </div>
+        <div class="setting-value" id="visual-symbol-mode-value">Runes</div>
+       </div>
+       <div class="setting-row">
+        <select id="visual-symbol-mode" class="keybind-input" style="max-width:none; width:100%;">
+         <option value="off">Off</option>
+         <option value="runes">Runes</option>
+         <option value="labels">Labels</option>
+        </select>
        </div>
       </div>
-     </div>
-     <div style="display:flex;gap:12px;justify-content:center;margin-top:24px;"><button id="settings-back-btn" class="menu-btn">← Back</button> <button id="settings-reset-btn" class="menu-btn" style="background:linear-gradient(135deg,#f97316,#ea580c);">Reset to Default</button>
-     </div>
+      <div class="setting-card range-row">
+       <div class="setting-head">
+        <div>
+         <h4 class="title-font">Particle limit</h4>
+         <p>Cap the number of active particles rendered at once.</p>
+        </div>
+        <div class="setting-value" id="visual-particle-limit-value"></div>
+       </div>
+       <input id="visual-particle-limit" type="range" min="60" max="900" step="10">
+      </div>
+      <div class="setting-card range-row">
+       <div class="setting-head">
+        <div>
+         <h4 class="title-font">Frame cap</h4>
+         <p>Limit the render rate for smoother performance on weaker machines.</p>
+        </div>
+        <div class="setting-value" id="visual-frame-cap-value"></div>
+       </div>
+       <input id="visual-frame-cap" type="range" min="30" max="144" step="1">
+      </div>
+     </section>
+     <section class="settings-panel" id="settings-panel-audio">
+      <div class="setting-card range-row">
+       <div class="setting-head">
+        <div>
+         <h3 class="title-font">Master volume</h3>
+         <p>Controls the overall loudness of the entire game.</p>
+        </div>
+        <div class="setting-value" id="audio-master-value"></div>
+       </div>
+       <input id="audio-master" type="range" min="0" max="100" step="1">
+      </div>
+      <div class="setting-card range-row">
+       <div class="setting-head">
+        <div>
+         <h4 class="title-font">Music volume</h4>
+         <p>Adjust the background music separately from the rest of the mix.</p>
+        </div>
+        <div class="setting-value" id="audio-music-value"></div>
+       </div>
+       <input id="audio-music" type="range" min="0" max="100" step="1">
+      </div>
+      <div class="setting-card range-row">
+       <div class="setting-head">
+        <div>
+         <h4 class="title-font">SFX volume</h4>
+         <p>Controls spell casts, UI taps, and future impact effects.</p>
+        </div>
+        <div class="setting-value" id="audio-sfx-value"></div>
+       </div>
+       <input id="audio-sfx" type="range" min="0" max="100" step="1">
+      </div>
+      <div class="setting-card">
+       <div class="setting-head">
+        <div>
+         <h4 class="title-font">Background music</h4>
+         <p>Enable or disable the looping ambient forge track.</p>
+        </div>
+        <label class="toggle-chip"><input id="audio-music-enabled" type="checkbox"> Enabled</label>
+       </div>
+       <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button id="audio-test-btn" class="menu-button secondary" type="button">Test music</button>
+        <button id="audio-sfx-test-btn" class="menu-button ghost" type="button">Test sfx</button>
+       </div>
+      </div>
+     </section>
+     <section class="settings-panel" id="settings-panel-controls">
+      <div class="setting-card">
+       <div class="setting-head">
+        <div>
+         <h3 class="title-font">Key binds</h3>
+         <p>Click a binding and press a key to capture it. Escape cancels the current bind.</p>
+        </div>
+       </div>
+       <div class="keybind-grid">
+        <div class="keybind-row"><label>Move Up</label><button class="keybind-button" id="bind-up" data-bind="up" type="button"></button></div>
+        <div class="keybind-row"><label>Move Down</label><button class="keybind-button" id="bind-down" data-bind="down" type="button"></button></div>
+        <div class="keybind-row"><label>Move Left</label><button class="keybind-button" id="bind-left" data-bind="left" type="button"></button></div>
+        <div class="keybind-row"><label>Move Right</label><button class="keybind-button" id="bind-right" data-bind="right" type="button"></button></div>
+        <div class="keybind-row"><label>Switch Spell Forward</label><button class="keybind-button" id="bind-switch" data-bind="switchSpell" type="button"></button></div>
+        <div class="keybind-row"><label>Switch Spell Backward</label><button class="keybind-button" id="bind-switch-back" data-bind="switchSpellBack" type="button"></button></div>
+        <div class="keybind-row"><label>Secondary Ability</label><button class="keybind-button" id="bind-secondary" data-bind="secondary" type="button"></button></div>
+        <div class="keybind-row"><label>Pause / Resume</label><button class="keybind-button" id="bind-pause" data-bind="pause" type="button"></button></div>
+        <div class="keybind-row"><label>Cast Spell</label><span class="toggle-chip">Mouse click</span></div>
+       </div>
+      </div>
+     </section>
     </div>
    </div>
   </div><!-- INSTRUCTIONS MENU -->
@@ -115,20 +503,22 @@
      <div style="margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #3a2a55;">
       <h3 style="color:#fbbf24;font-size:18px;margin:0 0 10px;letter-spacing:1px;text-transform:uppercase;font-family:'Cinzel',serif;">Combat</h3>
       <p style="margin:0 0 10px;line-height:1.6;color:#c084fc;"><strong style="color:#e2c4ff;">Move:</strong> WASD or Arrow Keys</p>
-      <p style="margin:0 0 10px;line-height:1.6;color:#c084fc;"><strong style="color:#e2c4ff;">Cast Spell:</strong> Click Mouse Anywhere</p>
-      <p style="margin:0;line-height:1.6;color:#c084fc;"><strong style="color:#e2c4ff;">Switch Spell:</strong> Q to switch forward, E to switch backward</p>
-      <p style="margin:12px 0 0;line-height:1.6;color:#a78bfa;font-size:14px;">Learn all 12 spells and their unique effects. Chain attacks together for powerful combos.</p>
+      <p style="margin:0 0 10px;line-height:1.6;color:#c084fc;"><strong style="color:#e2c4ff;">Cast Spell (Primary):</strong> Left-click to cast the currently selected spell.</p>
+      <p style="margin:0 0 10px;line-height:1.6;color:#c084fc;"><strong style="color:#e2c4ff;">Artifact (Secondary):</strong> Right-click or press your secondary key (default SPACE) to activate your equipped Artifact. Artifacts cost Mana to use and have cooldowns.</p>
+      <p style="margin:0;line-height:1.6;color:#c084fc;"><strong style="color:#e2c4ff;">Switch Spell:</strong> Q to switch forward, E to switch backward. You can equip up to 5 primary Spells. When you learn a 6th, you'll be prompted to replace one.</p>
+      <p style="margin:12px 0 0;line-height:1.6;color:#a78bfa;font-size:14px;">Each Spell has unique effects and trait tags. Build synergies by collecting multiple items with the same trait.</p>
      </div>
      <div style="margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #3a2a55;">
       <h3 style="color:#fbbf24;font-size:18px;margin:0 0 10px;letter-spacing:1px;text-transform:uppercase;font-family:'Cinzel',serif;">Abilities (Secondary)</h3>
       <p style="margin:0;line-height:1.6;color:#c084fc;"><strong style="color:#e2c4ff;">Press Spacebar</strong> to activate. 7 unique abilities: Shield, Blink, Slow, Heal, Pulse, Clone, Freeze.</p>
       <p style="margin:12px 0 0;line-height:1.6;color:#a78bfa;font-size:14px;">Each has a cooldown. Choose new ones after every 3 waves.</p>
      </div>
-     <div style="margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #3a2a55;">
-      <h3 style="color:#fbbf24;font-size:18px;margin:0 0 10px;letter-spacing:1px;text-transform:uppercase;font-family:'Cinzel',serif;">Resources</h3>
-      <p style="margin:0 0 10px;line-height:1.6;color:#c084fc;"><strong style="color:#e2c4ff;">Mana (Health):</strong> Your life pool. Collect green orbs to restore health.</p>
-      <p style="margin:0;line-height:1.6;color:#c084fc;"><strong style="color:#e2c4ff;">Souls:</strong> Points earned from kills. Proves your mastery.</p>
-     </div>
+    <div style="margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #3a2a55;">
+     <h3 style="color:#fbbf24;font-size:18px;margin:0 0 10px;letter-spacing:1px;text-transform:uppercase;font-family:'Cinzel',serif;">Resources</h3>
+     <p style="margin:0 0 10px;line-height:1.6;color:#c084fc;"><strong style="color:#e2c4ff;">Health:</strong> Your life pool. If this reaches 0 you die and return to the menu.</p>
+     <p style="margin:0 0 10px;line-height:1.6;color:#c084fc;"><strong style="color:#e2c4ff;">Mana:</strong> Used by Artifacts and some Spells. Mana regenerates over time; Artifacts may increase regen or provide passive bonuses.</p>
+     <p style="margin:0;line-height:1.6;color:#c084fc;"><strong style="color:#e2c4ff;">Souls:</strong> Points earned from kills. Use them conceptually for scoring and flavor.</p>
+    </div>
      <div style="margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #3a2a55;">
       <h3 style="color:#fbbf24;font-size:18px;margin:0 0 10px;letter-spacing:1px;text-transform:uppercase;font-family:'Cinzel',serif;">Status Effects</h3>
       <p style="margin:0 0 10px;line-height:1.6;color:#c084fc;"><strong style="color:#ff6b35;">Burn (Red Aura):</strong> Enemy takes continuous damage over time.</p>
@@ -137,11 +527,11 @@
      <div style="margin-bottom:12px;">
       <h3 style="color:#fbbf24;font-size:18px;margin:0 0 10px;letter-spacing:1px;text-transform:uppercase;font-family:'Cinzel',serif;">Pro Tips</h3>
       <ul style="margin:0;padding-left:20px;line-height:1.8;color:#c084fc;">
-       <li>Combine Fire + Frost spells for maximum damage synergy</li>
-       <li>Dodge incoming enemies when possible to avoid taking damage</li>
-       <li>Prioritize damage upgrades early, defense upgrades later</li>
-       <li>Use secondary abilities strategically—don't waste them</li>
-       <li>Each spell has different pierce, explosion, or chain properties</li>
+       <li>Combine spell traits (synergies) and Artifacts that share traits to unlock bonuses (e.g. Arcane).</li>
+       <li>Dodge incoming enemies — positioning matters more than raw damage sometimes.</li>
+       <li>Upgrades are offered between waves — choose wisely: new spells, artifacts, or upgrades.</li>
+       <li>Secondaries (Artifacts) are powerful but cost Mana; manage your resource carefully.</li>
+       <li>Mini-bosses appear every 5 waves and bosses every 10 waves — be prepared.</li>
       </ul>
      </div>
     </div><button id="instructions-back-btn" class="menu-btn" style="margin-top:28px;display:block;margin-left:auto;margin-right:auto;">← Back to Menu</button>
@@ -173,10 +563,23 @@
     #death-screen > div { animation: slideInDown 0.6s ease-out; }
    </style>
   </div>
-  <script>
+  <div id="pause-screen" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.7));z-index:300;">
+   <div style="background:rgba(10,5,20,0.95);border:1px solid rgba(124,58,237,0.25);padding:22px;border-radius:12px;min-width:420px;color:#e2c4ff;font-family:Quicksand, sans-serif;">
+    <h2 style="margin:0 0 12px;font-family:Cinzel, serif;">PAUSED</h2>
+    <div id="pause-stats" style="margin-bottom:12px;color:#c4b5fd;">Health: -- / -- • Mana: -- / -- • Wave: --</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;"><button id="pause-resume" class="menu-button primary">Resume</button><button id="pause-settings" class="menu-button secondary">Settings</button><button id="pause-menu" class="menu-button ghost">Exit to Menu</button></div>
+    <div style="margin-top:8px;color:#c4b5fd;font-size:13px;">
+      <strong style="color:#fbbf24;">Spells:</strong> <span id="pause-spells">Arcane Bolt</span>
+    </div>
+   </div>
+  </div>
+  <script type="module">
+    import { initSettingsUI, settings, keybinds } from './src/settings.js';
+    import { createAudioController } from './src/audio.js';
+
     // Element SDK
     const defaultConfig = {
-      game_title: 'Spellforge',
+      game_title: 'SoulForge',
       background_color: '#050010',
       surface_color: '#1a0533',
       text_color: '#e2c4ff',
@@ -188,6 +591,7 @@
 
     function applyConfig(config) {
       const t = config.game_title || defaultConfig.game_title;
+      document.title = t;
       const el = document.getElementById('hud-title');
       if (el) el.textContent = t;
       const st = document.getElementById('start-title');
@@ -214,57 +618,52 @@
       ])
     });
 
-    // KEYBIND SYSTEM
-    let keybinds = {
-      up: 'w', down: 's', left: 'a', right: 'd',
-      secondary: ' ', switchSpell: 'q', switchSpellBack: 'e'
-    };
-    
-    function loadKeybinds() {
-      const saved = localStorage.getItem('arcaneKeybinds');
-      if (saved) keybinds = JSON.parse(saved);
-      updateKeybindUI();
-    }
-    
-    function saveKeybinds() {
-      localStorage.setItem('arcaneKeybinds', JSON.stringify(keybinds));
-    }
-    
-    function updateKeybindUI() {
-      document.getElementById('key-up').value = keybinds.up.toUpperCase();
-      document.getElementById('key-down').value = keybinds.down.toUpperCase();
-      document.getElementById('key-left').value = keybinds.left.toUpperCase();
-      document.getElementById('key-right').value = keybinds.right.toUpperCase();
-      document.getElementById('key-secondary').value = keybinds.secondary === ' ' ? ' ' : keybinds.secondary.toUpperCase();
-      document.getElementById('key-switch').value = keybinds.switchSpell.toUpperCase();
-      document.getElementById('key-switch-back').value = keybinds.switchSpellBack.toUpperCase();
-    }
-    
-    document.getElementById('settings-back-btn').onclick = () => {
-      document.getElementById('settings-screen').style.display = 'none';
-      document.getElementById('start-screen').style.display = 'flex';
-    };
-    
-    document.getElementById('settings-reset-btn').onclick = () => {
-      keybinds = { up: 'w', down: 's', left: 'a', right: 'd', secondary: ' ', switchSpell: 'q', switchSpellBack: 'e' };
-      saveKeybinds();
-      updateKeybindUI();
-    };
-    
-    ['key-up', 'key-down', 'key-left', 'key-right', 'key-secondary', 'key-switch', 'key-switch-back'].forEach(id => {
-      document.getElementById(id).addEventListener('change', (e) => {
-        const keyMap = { 'key-up': 'up', 'key-down': 'down', 'key-left': 'left', 'key-right': 'right', 'key-secondary': 'secondary', 'key-switch': 'switchSpell', 'key-switch-back': 'switchSpellBack' };
-        let val = e.target.value.toLowerCase();
-        if (id === 'key-secondary' && e.target.value === '') val = ' ';
-        keybinds[keyMap[id]] = val;
-        saveKeybinds();
+    const audioController = createAudioController(() => settings.audio);
+    const { applyAudioSettings, playUiSound, startMenuMusic, stopMenuMusic } = audioController;
+
+    function openMenuScreen(screenId) {
+      ['start-screen', 'settings-screen', 'instructions-screen'].forEach(id => {
+        const screen = document.getElementById(id);
+        if (!screen) return;
+        screen.style.display = id === screenId ? (id === 'start-screen' ? 'flex' : 'block') : 'none';
       });
+
+      if (screenId !== 'game') {
+        if (settings.audio.musicEnabled) startMenuMusic();
+        applyAudioSettings();
+      }
+    }
+
+    initSettingsUI({
+      openMenuScreen,
+      playUiSound,
+      applyAudioSettings,
+      startMenuMusic,
+      stopMenuMusic
     });
-    
-    document.getElementById('instructions-back-btn').onclick = () => {
-      document.getElementById('instructions-screen').style.display = 'none';
-      document.getElementById('start-screen').style.display = 'flex';
-    };
+
+    function updatePauseUi() {
+      const el = document.getElementById('pause-stats');
+      if (!el || !player) return;
+      el.textContent = `Health: ${Math.max(0, player.hp)}/${player.maxHp} • Mana: ${Math.floor(player.mana||0)}/${player.maxMana||0} • Wave: ${wave}`;
+      const spellsEl = document.getElementById('pause-spells');
+      if (spellsEl) spellsEl.textContent = spells.map(s => s.name).join(', ');
+    }
+
+    function openPauseMenu() {
+      paused = true;
+      updatePauseUi();
+      document.getElementById('pause-screen').style.display = 'flex';
+    }
+
+    function closePauseMenu() {
+      paused = false;
+      document.getElementById('pause-screen').style.display = 'none';
+    }
+
+    document.getElementById('pause-resume').addEventListener('click', () => { closePauseMenu(); playUiSound(); });
+    document.getElementById('pause-settings').addEventListener('click', () => { openMenuScreen('settings-screen'); playUiSound(); });
+    document.getElementById('pause-menu').addEventListener('click', () => { document.getElementById('pause-screen').style.display = 'none'; openMenuScreen('start-screen'); gameState = 'menu'; playUiSound(); });
 
     // GAME ENGINE
     const canvas = document.getElementById('game');
@@ -283,29 +682,36 @@
     let secondaryPressed = false;
     
     document.addEventListener('keydown', e => {
-      keys[e.key.toLowerCase()] = true;
-      if (e.key.toLowerCase() === 'p' && gameState === 'playing') {
+      const pressed = e.key.toLowerCase();
+      keys[pressed] = true;
+      if (pressed === keybinds.pause && gameState === 'playing') {
         paused = !paused;
+        if (paused) openPauseMenu(); else closePauseMenu();
+        playUiSound();
       }
-      if (e.key.toLowerCase() === keybinds.secondary && !secondaryPressed) {
+      if (pressed === keybinds.secondary && !secondaryPressed) {
         secondaryPressed = true;
         if (gameState === 'playing' && !paused) activateSecondary();
       }
     });
     document.addEventListener('keyup', e => {
-      keys[e.key.toLowerCase()] = false;
-      if (e.key.toLowerCase() === keybinds.switchSpell) keys[keybinds.switchSpell] = false;
-      if (e.key.toLowerCase() === keybinds.switchSpellBack) keys[keybinds.switchSpellBack] = false;
+      const pressed = e.key.toLowerCase();
+      keys[pressed] = false;
+      if (pressed === keybinds.switchSpell) keys[keybinds.switchSpell] = false;
+      if (pressed === keybinds.switchSpellBack) keys[keybinds.switchSpellBack] = false;
     });
     canvas.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
-    canvas.addEventListener('mousedown', () => mouse.down = true);
-    canvas.addEventListener('mouseup', () => mouse.down = false);
+    canvas.addEventListener('contextmenu', e => e.preventDefault());
+    canvas.addEventListener('mousedown', (e) => { if (e.button === 2) { if (!secondaryPressed) { secondaryPressed = true; activateSecondary(); } } else mouse.down = true; });
+    canvas.addEventListener('mouseup', (e) => { if (e.button === 2) { secondaryPressed = false; } else mouse.down = false; });
 
     // Game state
     let player, bullets, enemies, particles, orbs, gameState, wave, kills, spellIndex, spells, upgrades, waveTimer, enemiesRemaining, paused, secondaryIndex, secondaries, damageNumbers;
+    let lastFrameTime = 0;
+    let gameLoopStarted = false;
 
     const SPELLS = [
-      { name: 'Arcane Bolt', color: '#a78bfa', speed: 12, damage: 10, size: 5, cooldown: 8, pierce: 0, type: 'basic' },
+      { name: 'Arcane Bolt', color: '#a78bfa', speed: 12, damage: 10, size: 5, cooldown: 8, pierce: 0, type: 'basic', traits: ['arcane'] },
       { name: 'Flame Burst', color: '#f97316', speed: 10, damage: 18, size: 7, cooldown: 14, pierce: 0, type: 'explosion', radius: 60 },
       { name: 'Frost Shard', color: '#67e8f9', speed: 14, damage: 8, size: 4, cooldown: 5, pierce: 1, type: 'pierce' },
       { name: 'Void Lance', color: '#c084fc', speed: 18, damage: 25, size: 3, cooldown: 20, pierce: 2, type: 'pierce' },
@@ -320,6 +726,7 @@
     ];
 
     const SECONDARIES = [
+      { name: 'Arcane Staff', color: '#a78bfa', cooldown: 8, type: 'artifact', duration: 8, traits: ['arcane'], passive: { manaRegenMultiplier: 1.10 }, active: { damageMultiplier: 1.10, manaCost: 40, duration: 8 } },
       { name: 'Arcane Shield', color: '#a78bfa', cooldown: 8, type: 'shield', duration: 10 },
       { name: 'Blink', color: '#c084fc', cooldown: 6, type: 'blink', distance: 80 },
       { name: 'Temporal Slow', color: '#fbbf24', cooldown: 12, type: 'slow', radius: 300, duration: 180 },
@@ -329,8 +736,42 @@
       { name: 'Frost Nova', color: '#67e8f9', cooldown: 11, type: 'freeze', radius: 220, duration: 90 }
     ];
 
+    function glyphForEnemy(enemy) {
+      if (settings.visuals.symbolMode === 'off') return '';
+      const runeMap = { 'Goblin': '✦', 'Gremlin': '◆', 'Orc': '⬢', 'Troll': '✶', 'Oni King': '⬤' };
+      const labelMap = { 'Goblin': 'G', 'Gremlin': 'g', 'Orc': 'O', 'Troll': 'T', 'Oni King': 'K' };
+      return settings.visuals.symbolMode === 'labels' ? (labelMap[enemy.kind] || '?') : (runeMap[enemy.kind] || '?');
+    }
+
+    function glyphForBullet(bullet) {
+      if (settings.visuals.symbolMode === 'off') return '';
+      const runeMap = {
+        basic: '•',
+        explosion: '✹',
+        pierce: '❖',
+        chain: '⚡',
+        nova: '◉',
+        meteor: '☄',
+        wave: '≈',
+        ring: '◎',
+        pull: '◌'
+      };
+      const labelMap = {
+        basic: 'B',
+        explosion: 'E',
+        pierce: 'P',
+        chain: 'C',
+        nova: 'N',
+        meteor: 'M',
+        wave: 'W',
+        ring: 'R',
+        pull: 'G'
+      };
+      return settings.visuals.symbolMode === 'labels' ? (labelMap[bullet.type] || '?') : (runeMap[bullet.type] || '?');
+    }
+
     function init() {
-      player = { x: canvas.width / 2, y: canvas.height / 2, vx: 0, vy: 0, hp: 100, maxHp: 100, radius: 14, cooldown: 0, speed: 3.5, invuln: 0, shielded: 0 };
+      player = { x: canvas.width / 2, y: canvas.height / 2, vx: 0, vy: 0, hp: 100, maxHp: 100, mana: 120, maxMana: 120, manaRegen: 0.9, radius: 14, cooldown: 0, speed: 3.5, invuln: 0, shielded: 0, activeDamageMultiplier: 1, activeDamageTime: 0 };
       bullets = [];
       enemies = [];
       particles = [];
@@ -344,38 +785,85 @@
       secondaryIndex = 0;
       secondaries = [SECONDARIES[0]];
       upgrades = { damage: 1, speed: 1, hp: 1, spellUpgrades: {} };
+      // apply artifact passives
+      applyPassiveArtifacts();
       paused = false;
       enemiesRemaining = 0;
       document.getElementById('hud').style.display = 'block';
       spawnWave();
     }
 
+    function applyPassiveArtifacts() {
+      // base regen
+      player.manaRegen = 0.9;
+      secondaries.forEach(s => {
+        if (s.passive && s.passive.manaRegenMultiplier) {
+          player.manaRegen *= s.passive.manaRegenMultiplier;
+        }
+      });
+      computeSynergies();
+    }
+
+    function computeSynergies() {
+      const counts = {};
+      spells.forEach(s => (s.traits||[]).forEach(t => counts[t] = (counts[t]||0) + 1));
+      secondaries.forEach(s => (s.traits||[]).forEach(t => counts[t] = (counts[t]||0) + 1));
+      // Arcane synergy: if 2 or more arcane traits, increase maxMana
+      if (counts.arcane && counts.arcane >= 2) {
+        const bonus = 10 * counts.arcane;
+        player.maxMana = Math.max(player.maxMana || 120, 120 + bonus);
+      } else {
+        player.maxMana = player.maxMana || 120;
+      }
+    }
+
     function spawnWave() {
-      let count = 3 + wave * 2;
+      const base = 3 + Math.floor(wave * 1.6);
+      let count = base;
       enemiesRemaining = count;
       for (let i = 0; i < count; i++) {
         setTimeout(() => spawnEnemy(), i * 400);
       }
+      // miniboss every 5, boss every 10
+      if (wave % 10 === 0) {
+        // boss
+        setTimeout(() => spawnEnemy('boss'), (count + 0.5) * 400);
+        enemiesRemaining++;
+      } else if (wave % 5 === 0) {
+        setTimeout(() => spawnEnemy('mini'), (count + 0.5) * 400);
+        enemiesRemaining++;
+      }
     }
 
-    function spawnEnemy() {
+    function spawnEnemy(miniOrBoss) {
       let side = Math.random() * 4 | 0;
       let x, y;
       if (side === 0) { x = -30; y = Math.random() * canvas.height; }
       else if (side === 1) { x = canvas.width + 30; y = Math.random() * canvas.height; }
       else if (side === 2) { x = Math.random() * canvas.width; y = -30; }
       else { x = Math.random() * canvas.width; y = canvas.height + 30; }
+      // enemy definitions
+      const types = {
+        goblin: { hp: 18 + wave * 2, speed: 1.6, radius: 12, color: '#10b981', name: 'Goblin', damage: 6 },
+        gremlin: { hp: 12 + wave * 1.6, speed: 2.1, radius: 10, color: '#86efac', name: 'Gremlin', damage: 4 },
+        orc: { hp: 36 + wave * 4, speed: 1.1, radius: 18, color: '#ef4444', name: 'Orc', damage: 12 },
+        troll: { hp: 180 + wave * 12, speed: 0.6, radius: 28, color: '#14532d', name: 'Troll', damage: 30 },
+        oni: { hp: 520 + wave * 40, speed: 1.6, radius: 36, color: '#7f1d1d', name: 'Oni King', damage: 55 }
+      };
 
-      let tier = Math.min(Math.floor(Math.random() * (1 + wave / 3)), 3);
-      const types = [
-        { hp: 20 + wave * 3, speed: 1.2, radius: 12, color: '#c026d3', name: 'Imp', damage: 8 },
-        { hp: 40 + wave * 5, speed: 0.8, radius: 18, color: '#dc2626', name: 'Demon', damage: 15 },
-        { hp: 60 + wave * 8, speed: 0.6, radius: 24, color: '#7c2d12', name: 'Golem', damage: 20 },
-        { hp: 100 + wave * 12, speed: 1.5, radius: 16, color: '#4c1d95', name: 'Wraith', damage: 25 }
-      ];
-      let t = types[tier];
+      let pick;
+      if (miniOrBoss === 'boss') pick = types.oni;
+      else if (miniOrBoss === 'mini') pick = types.troll;
+      else {
+        let r = Math.random();
+        if (r < 0.55) pick = types.goblin;
+        else if (r < 0.75) pick = types.gremlin;
+        else pick = types.orc;
+      }
+
       enemies.push({ 
-        x, y, hp: t.hp, maxHp: t.hp, speed: t.speed, radius: t.radius, color: t.color, damage: t.damage, flash: 0,
+        x, y, hp: pick.hp, maxHp: pick.hp, speed: pick.speed, radius: pick.radius, color: pick.color, damage: pick.damage, flash: 0,
+        kind: pick.name,
         burn: 0, chill: 0, chainedFrom: -1
       });
     }
@@ -390,12 +878,13 @@
         x: player.x, y: player.y,
         vx: Math.cos(angle) * spell.speed,
         vy: Math.sin(angle) * spell.speed,
-        damage: spell.damage * upgrades.damage,
+        damage: spell.damage * upgrades.damage * (player.activeDamageMultiplier || 1),
         size: spell.size,
         color: spell.color,
         pierce: spell.pierce,
         life: 120,
         type: spell.type,
+        spellName: spell.name,
         radius: spell.radius,
         chainCount: spell.chainCount
       };
@@ -412,6 +901,7 @@
       }
 
       bullets.push(bulletData);
+      triggerTone(Math.max(180, 260 + spell.damage * 5), 0.08, 'triangle', 0.04, false);
       
       // Muzzle particles
       for (let i = 0; i < 4; i++) {
@@ -422,6 +912,25 @@
     function activateSecondary() {
       let sec = secondaries[secondaryIndex];
       if (sec.activeCooldown && sec.activeCooldown > 0) return;
+
+      // Artifact active handling (consumes mana, grants temporary damage buff)
+      if (sec.type === 'artifact' && sec.active) {
+        const cost = sec.active.manaCost || 0;
+        if ((player.mana || 0) < cost) {
+          // insufficient mana
+          playUiSound();
+          return;
+        }
+        player.mana = Math.max(0, (player.mana || 0) - cost);
+        player.activeDamageMultiplier = sec.active.damageMultiplier || 1.0;
+        player.activeDamageTime = Math.max(0, Math.floor((sec.active.duration || 8) * 60));
+        // visual
+        for (let i = 0; i < 14; i++) particles.push({ x: player.x, y: player.y, vx: (Math.random() - 0.5) * 8, vy: (Math.random() - 0.5) * 8, life: 30, color: sec.color, size: 5 });
+        sec.activeCooldown = sec.cooldown;
+        triggerTone(520, 0.12, 'sine', 0.05, false);
+        secondaryPressed = false;
+        return;
+      }
 
       if (sec.type === 'shield') {
         player.shielded = sec.duration;
@@ -487,6 +996,7 @@
       }
 
       sec.activeCooldown = sec.cooldown;
+      triggerTone(392, 0.12, 'sine', 0.03, false);
       secondaryPressed = false;
     }
 
@@ -510,6 +1020,17 @@
       if (player.cooldown > 0) player.cooldown--;
       if (player.invuln > 0) player.invuln--;
       if (player.shielded > 0) player.shielded--;
+
+      // Mana regeneration (approx per second / 60)
+      if (typeof player.mana !== 'undefined') {
+        player.mana = Math.min(player.maxMana || 0, (player.mana || 0) + ((player.manaRegen || 0.9) / 60));
+      }
+
+      // Active damage buff timer
+      if (player.activeDamageTime && player.activeDamageTime > 0) {
+        player.activeDamageTime--;
+        if (player.activeDamageTime <= 0) player.activeDamageMultiplier = 1;
+      }
 
       // Secondary cooldowns
       secondaries.forEach(s => {
@@ -796,6 +1317,10 @@
         }
       }
 
+      if (particles.length > settings.visuals.particleLimit) {
+        particles.splice(0, particles.length - settings.visuals.particleLimit);
+      }
+
       // Orbs
       for (let i = orbs.length - 1; i >= 0; i--) {
         let o = orbs[i];
@@ -852,10 +1377,20 @@
       let choices = [];
       let availableSpells = SPELLS.filter(s => !spells.find(sp => sp.name === s.name));
       
-      // New spell
-      if (availableSpells.length > 0 && Math.random() < 0.6) {
+      // New spell (chance)
+      if (availableSpells.length > 0) {
         let s = availableSpells[Math.random() * availableSpells.length | 0];
-        choices.push({ label: `Learn: ${s.name}`, desc: `Dmg:${s.damage} Spd:${s.speed}`, action: () => { spells.push(s); } });
+        choices.push({ label: `Learn: ${s.name}`, desc: `Dmg:${s.damage} Spd:${s.speed}`, action: () => {
+          if (spells.length < 5) spells.push(s);
+          else {
+            if (!confirm('You already have 5 spells. Replace one?')) return;
+            const names = spells.map((p, i) => `${i+1}: ${p.name}`).join('\n');
+            const pick = parseInt(prompt('Choose spell slot to replace:\n' + names + '\nEnter slot number (1-5):'));
+            if (!isNaN(pick) && pick >= 1 && pick <= spells.length) spells[pick-1] = s;
+          }
+          // recompute synergies and passive effects after change
+          try { computeSynergies(); applyPassiveArtifacts(); } catch (err) {}
+        } });
       }
 
       // Spell upgrades
@@ -879,13 +1414,22 @@
       // Stat upgrades
       choices.push({ label: '+25% Damage', desc: 'Increase spell power', action: () => { upgrades.damage *= 1.25; } });
       choices.push({ label: '+20% Speed', desc: 'Move faster', action: () => { upgrades.speed *= 1.2; } });
-      choices.push({ label: '+30 Max Mana', desc: 'Increase vitality', action: () => { upgrades.hp += 1; player.maxHp += 30; player.hp += 30; } });
+      choices.push({ label: '+30 Max Health', desc: 'Increase vitality', action: () => { player.maxHp += 30; player.hp += 30; } });
+      choices.push({ label: '+30 Max Mana', desc: 'Increase mana pool', action: () => { player.maxMana += 30; player.mana += 30; } });
       choices.push({ label: '+10% Crit', desc: 'Random damage boost', action: () => { upgrades.crit = (upgrades.crit || 0) + 0.1; } });
       choices.push({ label: '+35% Spell Range', desc: 'Projectiles travel further', action: () => { upgrades.range = (upgrades.range || 1) + 0.35; } });
       choices.push({ label: 'Cooldown Reduction', desc: 'Spells recharge faster', action: () => { upgrades.cooldownReduc = (upgrades.cooldownReduc || 0) + 0.15; } });
 
+      // Artifact choices
+      const availableArtifacts = SECONDARIES.filter(s => s.type === 'artifact' && !secondaries.find(se => se.name === s.name));
+      if (availableArtifacts.length > 0 && Math.random() < 0.6) {
+        const a = availableArtifacts[Math.random() * availableArtifacts.length | 0];
+        choices.push({ label: `Artifact: ${a.name}`, desc: `Passive & active: ${a.traits ? a.traits.join(',') : ''}`, action: () => { secondaries.push(Object.assign({}, a)); applyPassiveArtifacts(); } });
+      }
+
+      // Shuffle and take 5
       choices.sort(() => Math.random() - 0.5);
-      choices = choices.slice(0, 3);
+      choices = choices.slice(0, 5);
 
       choices.forEach(c => {
         let btn = document.createElement('button');
@@ -951,7 +1495,8 @@
 
     function updateHud() {
       document.getElementById('hud-wave').textContent = `Wave: ${wave}`;
-      document.getElementById('hud-hp').textContent = `Mana: ${Math.max(0, player.hp)}/${player.maxHp}`;
+      document.getElementById('hud-hp').textContent = `Health: ${Math.max(0, player.hp)}/${player.maxHp}`;
+      if (document.getElementById('hud-mana')) document.getElementById('hud-mana').textContent = `Mana: ${Math.floor(player.mana || 0)}/${player.maxMana || 0}`;
       document.getElementById('hud-kills').textContent = `Souls: ${kills}`;
       document.getElementById('hud-spell').textContent = `Spell: ${spells[spellIndex].name} [${keybinds.switchSpell.toUpperCase()}/${keybinds.switchSpellBack.toUpperCase()}]`;
       
@@ -1031,6 +1576,15 @@
         ctx.shadowBlur = 12;
         ctx.fill();
         ctx.shadowBlur = 0;
+        const bulletGlyph = glyphForBullet(b);
+        if (bulletGlyph) {
+          ctx.fillStyle = '#f8f5ff';
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+          ctx.shadowBlur = 3;
+          ctx.font = 'bold 12px Quicksand, sans-serif';
+          ctx.fillText(bulletGlyph, b.x, b.y + 4);
+          ctx.shadowBlur = 0;
+        }
       });
 
       // Enemies
@@ -1046,6 +1600,15 @@
         ctx.shadowBlur = 8;
         ctx.fill();
         ctx.shadowBlur = 0;
+        const enemyGlyph = glyphForEnemy(e);
+        if (enemyGlyph) {
+          ctx.fillStyle = '#f8f5ff';
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+          ctx.shadowBlur = 4;
+          ctx.font = 'bold 16px Cinzel, serif';
+          ctx.fillText(enemyGlyph, e.x, e.y + 5);
+          ctx.shadowBlur = 0;
+        }
         
         // Burn aura effect
         if (e.burn > 0) {
@@ -1091,30 +1654,39 @@
       }
     }
 
-    function loop() {
-      update();
-      draw();
+    function loop(timestamp = 0) {
+      const frameCap = Math.max(30, settings.visuals.frameCap || 60);
+      const frameDelay = 1000 / frameCap;
+      if (timestamp - lastFrameTime >= frameDelay) {
+        update();
+        draw();
+        lastFrameTime = timestamp;
+      }
       requestAnimationFrame(loop);
     }
 
     // Menu
-    loadKeybinds();
     document.getElementById('play-btn').onclick = () => {
-      document.getElementById('start-screen').style.display = 'none';
+      openMenuScreen('game');
       init();
-      loop();
+      if (!gameLoopStarted) {
+        gameLoopStarted = true;
+        requestAnimationFrame(loop);
+      }
+      startMenuMusic();
+      playUiSound();
     };
     document.getElementById('settings-btn').onclick = () => {
-      document.getElementById('start-screen').style.display = 'none';
-      document.getElementById('settings-screen').style.display = 'block';
+      openMenuScreen('settings-screen');
+      playUiSound();
     };
     document.getElementById('instructions-btn').onclick = () => {
-      document.getElementById('start-screen').style.display = 'none';
-      document.getElementById('instructions-screen').style.display = 'block';
+      openMenuScreen('instructions-screen');
+      playUiSound();
     };
     document.getElementById('restart-btn').onclick = () => {
       document.getElementById('death-screen').style.display = 'none';
-      document.getElementById('start-screen').style.display = 'flex';
+      openMenuScreen('start-screen');
       location.reload();
     };
   </script>

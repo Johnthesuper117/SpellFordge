@@ -1,0 +1,19 @@
+SoulForge Changelog
+
+Added
+- Rebranded the landing page to SoulForge.
+- Built a new hero-style main menu with primary, settings, and guide entry points.
+- Replaced the single settings block with a tabbed settings layout for Visuals, Audio, and Controls.
+- Split the settings and audio runtime into separate modules under src/.
+- Added accessibility-oriented visual options for color-blind symbols, particle limits, and frame caps.
+- Added audio controls for master volume, music volume, SFX volume, and background music enable/disable.
+- Added clickable keybind buttons for movement, spell swapping, secondary ability, and pause.
+- Added persistent settings storage in localStorage.
+- Added basic menu audio scaffolding with UI sounds and looping ambient music.
+- Added color-blind symbol rendering support for enemies and spells.
+- Added particle trimming and frame-cap pacing hooks to the game loop.
+- Added CHANGELOG.txt, TODO.txt, and SUGGESTIONS.txt.
+
+Notes
+- The core combat prototype still runs from the existing single-file HTML game shell.
+- Menu and settings changes are intentionally lightweight so the gameplay code can keep evolving without a framework migration.

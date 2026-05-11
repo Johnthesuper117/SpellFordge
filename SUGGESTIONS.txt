@@ -1,0 +1,11 @@
+SoulForge Suggestions
+
+1. Build the actual run loop next. The menu is now a stable front door, so the best payoff is to turn the existing combat prototype into a real roguelike with waves, rewards, and a win state.
+
+2. Add a few signature enemies and one boss early. That gives the project an identity fast and makes balancing the spell system much easier.
+
+3. Replace the placeholder audio with real assets once the combat cadence settles. Sound design will matter more after the first playable loop exists.
+
+4. Continue splitting the gameplay runtime into focused modules now that settings and audio are already separated. The next natural cut is combat state, enemy logic, and rendering.
+
+5. After the core loop is stable, add accessibility pass two: screen shake reduction, flash reduction, and a more explicit symbol legend.
