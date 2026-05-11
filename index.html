@@ -325,40 +325,42 @@
     Secondary: Arcane Shield [SPACE]
    </div>
    <div id="hud-secondary-cd" style="font-size:12px;color:#f97316;"></div>
+  <div id="hud-synergy" style="font-size:12px;color:#22d3ee;margin-top:6px;">Synergy: None</div>
   </div><!-- START/MAIN MENU -->
+  <div id="debug-hud" style="display:none;position:absolute;top:12px;right:12px;max-width:380px;padding:10px 12px;border-radius:10px;background:rgba(5,0,16,0.84);border:1px solid rgba(139,92,246,0.35);z-index:210;color:#e9d5ff;font-family:Quicksand,sans-serif;font-size:12px;line-height:1.5;pointer-events:none;white-space:pre-wrap;"></div>
   <div id="start-screen" class="screen-shell" style="display:flex;">
    <div class="card-shell hero-grid">
     <div>
-     <div class="eyebrow">Forged for the arcane</div>
+     <div class="eyebrow">SoulForge Main Menu</div>
      <h1 id="start-title" class="hero-title title-font">SOULFORGE</h1>
-     <p class="hero-copy">Enter a fast-moving magic roguelike built around spell swapping, survival waves, and a growing arsenal of runes, relics, and powers.</p>
+     <p class="hero-copy">Survive escalating waves, defeat mini-bosses and bosses, and build spell-artifact synergies. Choose your upgrades between rounds and forge your run.</p>
      <div class="feature-row">
-      <span class="feature-pill">12 spells to discover</span>
-      <span class="feature-pill">7 secondary abilities</span>
-      <span class="feature-pill">Accessibility-first visuals</span>
-      <span class="feature-pill">Menu + settings shell ready</span>
+      <span class="feature-pill">Start with Arcane Bolt + Arcane Staff</span>
+      <span class="feature-pill">Mini-boss every 5 waves</span>
+      <span class="feature-pill">Boss every 10 waves</span>
+      <span class="feature-pill">5 upgrade choices each wave</span>
      </div>
      <div class="menu-actions">
-      <button id="play-btn" class="menu-button primary">Start Game</button>
-      <button id="settings-btn" class="menu-button secondary">Settings</button>
-      <button id="instructions-btn" class="menu-button ghost">Guide</button>
+      <button id="play-btn" class="menu-button primary" type="button">Start Game</button>
+      <button id="settings-btn" class="menu-button secondary" type="button">Settings</button>
+      <button id="instructions-btn" class="menu-button ghost" type="button">Guide</button>
      </div>
     </div>
     <aside class="side-card">
      <div class="side-stat">
-      <div class="label">Mode</div>
-      <div class="value">Roguelike Prototype</div>
-      <div class="hint">Wave-based combat, spell upgrades, and an evolving build loop are already wired into the scene.</div>
+      <div class="label">Primary Controls</div>
+      <div class="value">LMB / Q / E</div>
+      <div class="hint">Left-click casts. Q/E rotates equipped primary spells.</div>
      </div>
      <div class="side-stat">
-      <div class="label">Accessibility</div>
-      <div class="value">Colorblind Support</div>
-      <div class="hint">Visual symbols, adjustable particle density, and frame caps help keep the game readable on more displays.</div>
+      <div class="label">Artifact Controls</div>
+      <div class="value">RMB / SPACE</div>
+      <div class="hint">Use your equipped artifact active skill, consuming mana.</div>
      </div>
      <div class="side-stat">
-      <div class="label">Audio</div>
-      <div class="value">Master / Music / SFX</div>
-      <div class="hint">Volume sliders and background music toggles are included in the new settings flow.</div>
+      <div class="label">Session Controls</div>
+      <div class="value">P / F3</div>
+      <div class="hint">Pause and inspect run state. Toggle temporary debug HUD.</div>
      </div>
     </aside>
    </div>
@@ -579,6 +581,9 @@
     <div style="margin-top:8px;color:#c4b5fd;font-size:13px;">
       <strong style="color:#fbbf24;">Spells:</strong> <span id="pause-spells">Arcane Bolt</span>
     </div>
+    <div style="margin-top:6px;color:#c4b5fd;font-size:13px;">
+      <strong style="color:#22d3ee;">Synergies:</strong> <span id="pause-synergies">None</span>
+    </div>
    </div>
   </div>
   <script type="module">
@@ -610,25 +615,31 @@
       if (st) st.textContent = t;
     }
 
-    window.elementSdk.init({
-      defaultConfig,
-      onConfigChange: async (config) => applyConfig(config),
-      mapToCapabilities: (config) => ({
-        recolorables: [
-          { get: () => config.background_color || defaultConfig.background_color, set: v => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
-          { get: () => config.surface_color || defaultConfig.surface_color, set: v => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
-          { get: () => config.text_color || defaultConfig.text_color, set: v => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
-          { get: () => config.primary_action || defaultConfig.primary_action, set: v => { config.primary_action = v; window.elementSdk.setConfig({ primary_action: v }); } },
-          { get: () => config.secondary_action || defaultConfig.secondary_action, set: v => { config.secondary_action = v; window.elementSdk.setConfig({ secondary_action: v }); } }
-        ],
-        borderables: [],
-        fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: v => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
-        fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: v => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
-      }),
-      mapToEditPanelValues: (config) => new Map([
-        ['game_title', config.game_title || defaultConfig.game_title]
-      ])
-    });
+    try {
+      if (window.elementSdk && typeof window.elementSdk.init === 'function') {
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange: async (config) => applyConfig(config),
+          mapToCapabilities: (config) => ({
+            recolorables: [
+              { get: () => config.background_color || defaultConfig.background_color, set: v => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+              { get: () => config.surface_color || defaultConfig.surface_color, set: v => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+              { get: () => config.text_color || defaultConfig.text_color, set: v => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+              { get: () => config.primary_action || defaultConfig.primary_action, set: v => { config.primary_action = v; window.elementSdk.setConfig({ primary_action: v }); } },
+              { get: () => config.secondary_action || defaultConfig.secondary_action, set: v => { config.secondary_action = v; window.elementSdk.setConfig({ secondary_action: v }); } }
+            ],
+            borderables: [],
+            fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: v => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+            fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: v => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
+          }),
+          mapToEditPanelValues: (config) => new Map([
+            ['game_title', config.game_title || defaultConfig.game_title]
+          ])
+        });
+      }
+    } catch (sdkError) {
+      console.warn('Element SDK unavailable, continuing without it.', sdkError);
+    }
 
     const audioController = createAudioController(() => settings.audio);
     const { applyAudioSettings, playUiSound, startMenuMusic, stopMenuMusic, triggerTone } = audioController;
@@ -637,7 +648,11 @@
       ['start-screen', 'settings-screen', 'instructions-screen'].forEach(id => {
         const screen = document.getElementById(id);
         if (!screen) return;
-        screen.style.display = id === screenId ? (id === 'start-screen' ? 'flex' : 'block') : 'none';
+        if (id === screenId) {
+          screen.style.display = screen.classList.contains('screen-shell') ? 'flex' : 'block';
+        } else {
+          screen.style.display = 'none';
+        }
       });
 
       if (screenId !== 'game') {
@@ -675,6 +690,35 @@
       el.textContent = `Health: ${Math.max(0, player.hp)}/${player.maxHp} • Mana: ${Math.floor(player.mana||0)}/${player.maxMana||0} • Wave: ${wave}`;
       const spellsEl = document.getElementById('pause-spells');
       if (spellsEl) spellsEl.textContent = spells.map(s => s.name).join(', ');
+      const synergiesEl = document.getElementById('pause-synergies');
+      if (synergiesEl) synergiesEl.textContent = formatSynergyText();
+    }
+
+    function updateDebugHud() {
+      if (!debugHudVisible) return;
+      const debugEl = document.getElementById('debug-hud');
+      if (!debugEl) return;
+      const currentEnemyCounts = enemies.reduce((acc, e) => {
+        acc[e.kind] = (acc[e.kind] || 0) + 1;
+        return acc;
+      }, {});
+      const upcomingPlan = buildWaveSpawnPlan(wave);
+      const planCounts = upcomingPlan.reduce((acc, p) => {
+        acc[p.kind] = (acc[p.kind] || 0) + 1;
+        return acc;
+      }, {});
+      debugEl.textContent = [
+        'DEBUG HUD (F3)',
+        `State: ${gameState} | Paused: ${paused}`,
+        `Wave: ${wave} | Kills: ${kills} | Remaining: ${enemiesRemaining}`,
+        `HP: ${Math.round(player?.hp || 0)}/${Math.round(player?.maxHp || 0)} | Mana: ${Math.round(player?.mana || 0)}/${Math.round(player?.maxMana || 0)}`,
+        `Spells: ${spells.length} | Artifact Count: ${secondaries.length}`,
+        `Entities -> enemies:${enemies.length}, bullets:${bullets.length}, particles:${particles.length}, orbs:${orbs.length}`,
+        `Synergy: ${formatSynergyText()}`,
+        `Current enemy mix: ${Object.keys(currentEnemyCounts).length ? JSON.stringify(currentEnemyCounts) : 'none'}`,
+        `Wave spawn plan: ${Object.keys(planCounts).length ? JSON.stringify(planCounts) : 'none'}`,
+        `Frame cap: ${settings.visuals.frameCap}`
+      ].join('\n');
     }
 
     function openPauseMenu() {
@@ -713,6 +757,13 @@
     
     document.addEventListener('keydown', e => {
       const pressed = e.key.toLowerCase();
+      if (pressed === 'f3') {
+        debugHudVisible = !debugHudVisible;
+        const debugEl = document.getElementById('debug-hud');
+        if (debugEl) debugEl.style.display = debugHudVisible ? 'block' : 'none';
+        e.preventDefault();
+        return;
+      }
       keys[pressed] = true;
       if (pressed === keybinds.pause && gameState === 'playing') {
         paused = !paused;
@@ -738,6 +789,8 @@
     // Game state
     let player, bullets, enemies, particles, orbs, gameState, wave, kills, spellIndex, spells, upgrades, waveTimer, enemiesRemaining, paused, secondaryIndex, secondaries, damageNumbers;
     let gameEngine;
+    let synergyCounts = {};
+    let debugHudVisible = false;
 
     const SPELLS = [
       { name: 'Arcane Bolt', color: '#a78bfa', speed: 12, damage: 10, size: 5, cooldown: 8, pierce: 0, type: 'basic', traits: ['arcane'] },
@@ -837,6 +890,7 @@
       const counts = {};
       spells.forEach(s => (s.traits||[]).forEach(t => counts[t] = (counts[t]||0) + 1));
       secondaries.forEach(s => (s.traits||[]).forEach(t => counts[t] = (counts[t]||0) + 1));
+      synergyCounts = counts;
       // Arcane synergy: if 2 or more arcane traits, increase maxMana
       if (counts.arcane && counts.arcane >= 2) {
         const bonus = 10 * counts.arcane;
@@ -844,6 +898,13 @@
       } else {
         player.maxMana = player.maxMana || 120;
       }
+    }
+
+    function formatSynergyText() {
+      const parts = Object.entries(synergyCounts)
+        .filter(([, count]) => count >= 2)
+        .map(([trait, count]) => `${trait} x${count}`);
+      return parts.length ? parts.join(' | ') : 'None';
     }
 
     function spawnWave() {
@@ -1542,6 +1603,9 @@
       let sec = secondaries[secondaryIndex];
       let cdText = sec.activeCooldown > 0 ? ` [${Math.ceil(sec.activeCooldown / 10)}s]` : '';
       document.getElementById('hud-secondary').textContent = `Secondary: ${sec.name} [${keybinds.secondary === ' ' ? 'SPACE' : keybinds.secondary.toUpperCase()}]${cdText}`;
+      const synergyEl = document.getElementById('hud-synergy');
+      if (synergyEl) synergyEl.textContent = `Synergy: ${formatSynergyText()}`;
+      updateDebugHud();
     }
 
     function draw() {
